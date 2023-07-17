@@ -1,0 +1,34 @@
+redis-ha:
+  enabled: false
+  haproxy.replicas: "2"
+
+redis:
+   image:
+     tag: '6.2.4'
+
+controller:
+  enableStatefulSet: true
+  args:
+    statusProcessors: 20
+  args:
+    operationProcessors: 50
+  args:
+    repoServerTimeoutSeconds: 420
+  args:
+    appResyncPeriod: 600
+
+server:
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+
+repoServer:
+  replicas: 4
+  autoscaling:
+    enabled: true
+    minReplicas: 4
+
+configs:
+  cm:
+    #use annotation for tracking but keep labels for compatibility with other tools
+    application.resourceTrackingMethod: annotation+label

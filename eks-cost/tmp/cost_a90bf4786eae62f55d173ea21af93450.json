@@ -1,0 +1,1 @@
+{"currency": "USD", "hourly": 0.05, "monthly": 34.56, "diff_hourly": 0.0, "diff_monthly": 0.0, "messages": ["It is sometimes impossible to extract all information required for cost estimations from the Terraform plan provided, and it is more accurate to get estimates from the Terraform state file after the infrastructure is created."]}

@@ -1,0 +1,15 @@
+# .terraform directories
+**/.terraform/*
+.terraform.d
+terraform.tfstate
+terraform.tfstate.backup
+
+# .tfstate files
+*.tfstate
+*.tfstate.*
+**/tf_plan_changes
+**/terraform.plan
+**/.terraform.lock.hcl
+*plan.out
+*plan.out.json
+*lock.hcl
