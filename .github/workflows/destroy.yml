@@ -43,7 +43,7 @@ jobs:
       working-directory: ./eks-infra
       continue-on-error: true
 
-    - name: Terraform Apply
+    - name: Terraform Destroy
       id: apply
-      run: terraform apply -auto-approve -input=false
+      run: terraform destroy -auto-approve -input=false
       working-directory: ./eks-infra
