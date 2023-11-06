@@ -3,9 +3,9 @@ name: Terraform
 on:
   workflow_dispatch:
 
-env:
-  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+permissions:
+  id-token: write # required to use OIDC authentication
+  contents: read # required to checkout the code from the repo
 
 jobs:
   terraform:
@@ -14,9 +14,9 @@ jobs:
     defaults:
       run:
         working-directory: eks
-    permissions:
-      contents: read
-      pull-requests: write
+    # permissions:
+    #   contents: read
+    #   pull-requests: write
     steps:
     - name: Checkout
       uses: actions/checkout@v2
@@ -43,7 +43,15 @@ jobs:
       working-directory: ./eks-infra
       continue-on-error: true
 
-    - name: Terraform Destroy
+    - name: configure aws credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        role-to-assume: arn:aws:iam::955210728575:role/ex-iam-github-oidc
+        role-duration-seconds: 900 # the ttl of the session, in seconds.
+        aws-region: eu-west-1 # use your region here.
+    
+
+    - name: Terraform Plan
       id: apply
-      run: terraform destroy -auto-approve -input=false
+      run: terraform plan
       working-directory: ./eks-infra
