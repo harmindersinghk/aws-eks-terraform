@@ -39,6 +39,6 @@ jobs:
       working-directory: ./eks-infra
     
     - name: Terraform Destroy
-      id: apply
-      run: terraform apply -auto-approve -input=false
+      id: destroy
+      run: terraform destroy -auto-approve -input=false
       working-directory: ./eks-infra

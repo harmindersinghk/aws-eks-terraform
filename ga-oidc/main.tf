@@ -1,13 +1,3 @@
-provider "aws" {
-  region = local.region
-
-  backend "s3" {
-    bucket = "tf-state-eks-2023"
-    key    = "oidc"
-    region = "eu-west-2"
-  }
-}
-
 locals {
   name   = "ex-iam-github-oidc"
   region = "eu-west-1"
@@ -52,8 +42,8 @@ module "iam_github_oidc_role" {
   # ]
 
   policies = {
-    additional = aws_iam_policy.additional.arn
-    S3ReadOnly = "arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess"
+    additional = aws_iam_policy.additional.arn,
+    Admin = "arn:aws:iam::aws:policy/AdministratorAccess"
   }
 
   tags = local.tags
