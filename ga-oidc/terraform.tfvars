@@ -1,1 +1,1 @@
-subjects = ["eks"]
+subjects = ["harmindersinghk/eks:*"]

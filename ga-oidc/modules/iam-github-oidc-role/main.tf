@@ -63,6 +63,21 @@ resource "aws_iam_role" "this" {
   permissions_boundary  = var.permissions_boundary_arn
   force_detach_policies = var.force_detach_policies
 
+  inline_policy {
+    name = "iam_get"
+
+    policy = jsonencode({
+      Version = "2012-10-17"
+      Statement = [
+        {
+          Action   = ["iam:GetRole"]
+          Effect   = "Allow"
+          Resource = "*"
+        },
+      ]
+    })
+  }
+
   tags = var.tags
 }
 

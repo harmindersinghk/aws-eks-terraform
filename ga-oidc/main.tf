@@ -1,5 +1,11 @@
 provider "aws" {
   region = local.region
+
+  backend "s3" {
+    bucket = "tf-state-eks-2023"
+    key    = "oidc"
+    region = "eu-west-2"
+  }
 }
 
 locals {
@@ -7,9 +13,7 @@ locals {
   region = "eu-west-1"
 
   tags = {
-    Example    = local.name
-    GithubRepo = "terraform-aws-iam"
-    GithubOrg  = "terraform-aws-modules"
+    Name    = local.name
   }
 }
 

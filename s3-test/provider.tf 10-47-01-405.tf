@@ -1,9 +1,22 @@
+# terraform {
+#   backend "s3" {
+#     bucket = "tf-state-eks-2023"
+#     key    = "test"
+#     region = "eu-west-2"
+#   }
+# }
+
+# provider "aws" {
+#     version = ">= 4.47"
+# }
+
 terraform {
+
   required_version = ">= 1.0"
 
   backend "s3" {
     bucket = "tf-state-eks-2023"
-    key    = "infra"
+    key    = "test"
     region = "eu-west-2"
   }
 
@@ -11,10 +24,6 @@ terraform {
     aws = {
       source  = "hashicorp/aws"
       version = ">= 4.47"
-    }
-    kubernetes = {
-      source  = "hashicorp/kubernetes"
-      version = ">= 2.10"
     }
   }
 }
