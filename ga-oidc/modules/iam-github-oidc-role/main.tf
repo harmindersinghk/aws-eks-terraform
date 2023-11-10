@@ -6,6 +6,7 @@ locals {
   provider_url = replace(var.provider_url, "https://", "")
 
   account_id = data.aws_caller_identity.current.account_id
+  user_arn   = data.aws_caller_identity.current.arn
   partition  = data.aws_partition.current.partition
 }
 
@@ -47,6 +48,16 @@ data "aws_iam_policy_document" "this" {
       # Strip `repo:` to normalize for cases where users may prepend it
       values = [for subject in var.subjects : "repo:${trimprefix(subject, "repo:")}"]
     }
+  }
+
+  statement {
+    sid    = "localUserAssume"
+    effect = "Allow"
+    principals {
+      type        = "AWS"
+      identifiers = ["${local.user_arn}"]
+    }
+    actions = ["sts:AssumeRole"]
   }
 }
 

@@ -1,0 +1,46 @@
+name: Restart kubeproxy and coredns
+
+on:
+  workflow_dispatch:
+
+permissions:
+  id-token: write # required to use OIDC authentication
+  contents: read # required to checkout the code from the repo
+
+jobs:
+  Restarts:
+    name: Restarts
+    runs-on: ubuntu-20.04
+    defaults:
+      run:
+        working-directory: eks
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: configure aws credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        role-to-assume: arn:aws:iam::955210728575:role/ex-iam-github-oidc
+        role-duration-seconds: 900 # the ttl of the session, in seconds.
+        aws-region: eu-west-1 # use your region here.
+
+    - name: Authenticate to EKS
+      id: autheks
+      run: aws eks update-kubeconfig --name eks-cluster --region eu-west-1
+      working-directory: ./eks-apps
+    
+    - name: Restart kubeproxy
+      id: restartproxy
+      run: kubectl -n kube-system rollout restart daemonset kube-proxy
+      working-directory: ./eks-apps
+
+    - name: Sleep for 30 seconds
+      uses: whatnick/wait-action@master
+      with:
+        time: '60s'
+
+    - name: Restart coredns
+      id: restartcoredns
+      run: kubectl -n kube-system rollout restart deployment coredns
+      working-directory: ./eks-apps

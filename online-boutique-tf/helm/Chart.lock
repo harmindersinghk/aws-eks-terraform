@@ -1,0 +1,6 @@
+dependencies:
+- name: onlineboutique
+  repository: file://../helm-chart/
+  version: 0.8.0
+digest: sha256:05a85b2e91b8319f5212289282e2bd47ea977bfbc7a082d390ebaa53e2046444
+generated: "2023-11-17T10:16:15.658905Z"

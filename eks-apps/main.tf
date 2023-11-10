@@ -117,12 +117,14 @@ resource "bcrypt_hash" "argo" {
 
 #tfsec:ignore:aws-ssm-secret-use-customer-key
 resource "aws_secretsmanager_secret" "argocd" {
+  count         = var.enable_argocd ? 1 : 0
   name                    = "argocd"
   recovery_window_in_days = 0 # Set to zero for this example to force delete during Terraform destroy
 }
 
 resource "aws_secretsmanager_secret_version" "argocd" {
-  secret_id     = aws_secretsmanager_secret.argocd.id
+  count         = var.enable_argocd ? 1 : 0
+  secret_id     = aws_secretsmanager_secret.argocd[0].id
   secret_string = random_password.argocd.result
 }
 

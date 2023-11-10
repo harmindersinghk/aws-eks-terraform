@@ -1,4 +1,4 @@
-name: Terraform Destroy
+name: Delete Cluster
 
 on:
   workflow_dispatch:
@@ -14,9 +14,6 @@ jobs:
     defaults:
       run:
         working-directory: eks
-    # permissions:
-    #   contents: read
-    #   pull-requests: write
     steps:
     - name: Checkout
       uses: actions/checkout@v2

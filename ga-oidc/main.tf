@@ -3,7 +3,7 @@ locals {
   region = "eu-west-1"
 
   tags = {
-    Name    = local.name
+    Name = local.name
   }
 }
 
@@ -29,7 +29,7 @@ module "iam_github_oidc_provider_disabled" {
 ################################################################################
 
 module "iam_github_oidc_role" {
-  source = "./modules/iam-github-oidc-role"
+  source   = "./modules/iam-github-oidc-role"
   subjects = var.subjects
 
   name = local.name
@@ -43,16 +43,16 @@ module "iam_github_oidc_role" {
 
   policies = {
     additional = aws_iam_policy.additional.arn,
-    Admin = "arn:aws:iam::aws:policy/AdministratorAccess"
+    Admin      = "arn:aws:iam::aws:policy/AdministratorAccess"
   }
 
   tags = local.tags
 }
 
 module "iam_github_oidc_role_disabled" {
-  source = "./modules/iam-github-oidc-role"
+  source   = "./modules/iam-github-oidc-role"
   subjects = var.subjects
-  
+
   create = false
 }
 

@@ -1,4 +1,4 @@
-name: Create Cluster
+name: Delete Sample App
 
 on:
   workflow_dispatch:
@@ -9,7 +9,7 @@ permissions:
 
 jobs:
   terraform:
-    name: Terraform Apply
+    name: Terraform Destroy
     runs-on: ubuntu-20.04
     defaults:
       run:
@@ -33,31 +33,21 @@ jobs:
     - name: Terraform Format
       id: fmt
       run: terraform fmt -check
-      working-directory: ./eks-infra
+      working-directory: ./online-boutique-tf
       continue-on-error: true
 
     - name: Terraform Init
       id: init
       run: terraform init
-      working-directory: ./eks-infra
+      working-directory: ./online-boutique-tf
 
     - name: Terraform Validate
       id: validate
       run: terraform validate -no-color
-      working-directory: ./eks-infra
+      working-directory: ./online-boutique-tf
       continue-on-error: true
     
-    - name: Terraform Apply
-      id: apply
-      run: terraform apply -auto-approve -input=false
-      working-directory: ./eks-infra
-
-    - name: Terraform Init
-      id: init-calico
-      run: terraform init
-      working-directory: ./eks-apps
-
-    - name: Terraform Apply
-      id: apply-calico
-      run: terraform apply -var-file enable_calico.tfvars -auto-approve -input=false
-      working-directory: ./eks-apps
+    - name: Terraform Destroy
+      id: destroy
+      run: terraform destroy -auto-approve -input=false
+      working-directory: ./online-boutique-tf

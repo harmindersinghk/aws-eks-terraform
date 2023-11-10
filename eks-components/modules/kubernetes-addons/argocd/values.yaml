@@ -13,7 +13,7 @@ controller:
   args:
     operationProcessors: 50
   args:
-    repoServerTimeoutSeconds: 420
+    repoServerTimeoutSeconds: 600
   args:
     appResyncPeriod: 600
 

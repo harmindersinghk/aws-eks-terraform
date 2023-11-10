@@ -59,7 +59,7 @@ variable "force_detach_policies" {
 variable "max_session_duration" {
   description = "Maximum CLI/API session duration in seconds between 3600 and 43200"
   type        = number
-  default     = null
+  default     = 3600
 }
 
 variable "audience" {
