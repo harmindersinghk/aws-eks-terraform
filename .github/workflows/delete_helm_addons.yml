@@ -1,4 +1,4 @@
-name: Restart kubeproxy and coredns
+name: Delete Helm Addons
 
 on:
   workflow_dispatch:
@@ -8,8 +8,8 @@ permissions:
   contents: read # required to checkout the code from the repo
 
 jobs:
-  Restarts:
-    name: Restarts
+  terraform:
+    name: Delete Addons - Helm
     runs-on: ubuntu-20.04
     defaults:
       run:
@@ -18,6 +18,11 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
 
+    - name: Use Terraform 1.3.0
+      uses: hashicorp/setup-terraform@v2
+      with:
+        terraform_version: 1.3.0
+
     - name: configure aws credentials
       uses: aws-actions/configure-aws-credentials@v1
       with:
@@ -25,22 +30,24 @@ jobs:
         role-duration-seconds: 900 # the ttl of the session, in seconds.
         aws-region: eu-west-1 # use your region here.
 
-    - name: Authenticate to EKS
-      id: autheks
-      run: aws eks update-kubeconfig --name eks-cluster --region eu-west-1
+    - name: Terraform Format
+      id: fmt
+      run: terraform fmt -check
       working-directory: ./eks-apps
+      continue-on-error: true
+
+    - name: Terraform Init
+      id: init
+      run: terraform init
+      working-directory: ./eks-apps
+
+    - name: Terraform Validate
+      id: validate
+      run: terraform validate -no-color
+      working-directory: ./eks-apps
+      continue-on-error: true
     
-    - name: Restart kubeproxy
-      id: restartproxy
-      run: kubectl -n kube-system rollout restart daemonset kube-proxy
-      working-directory: ./eks-apps
-
-    - name: Sleep for 30 seconds
-      uses: whatnick/wait-action@master
-      with:
-        time: '60s'
-
-    - name: Restart coredns
-      id: restartcoredns
-      run: kubectl -n kube-system rollout restart deployment coredns
+    - name: Terraform Apply
+      id: apply
+      run: terraform apply -var-file delete_helm_addons.tfvars -auto-approve -input=false
       working-directory: ./eks-apps

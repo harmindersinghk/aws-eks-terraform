@@ -8,8 +8,8 @@ permissions:
   contents: read # required to checkout the code from the repo
 
 jobs:
-  terraform:
-    name: Terraform Apply
+  helm:
+    name: Create App - Helm
     runs-on: ubuntu-20.04
     defaults:
       run:
@@ -30,24 +30,23 @@ jobs:
         role-duration-seconds: 900 # the ttl of the session, in seconds.
         aws-region: eu-west-1 # use your region here.
 
-    - name: Terraform Format
-      id: fmt
-      run: terraform fmt -check
-      working-directory: ./online-boutique-tf
-      continue-on-error: true
+    - name: aws-cli
+      id: install-aws-cli
+      uses: unfor19/install-aws-cli-action@master
+      with:
+        version: 1.19.100
+    - run: aws eks update-kubeconfig --name eks-cluster --region eu-west-1 --kubeconfig '~/.kube/config'
+      working-directory: /
 
-    - name: Terraform Init
-      id: init
-      run: terraform init
-      working-directory: ./online-boutique-tf
+    - name: install-helm
+      id: install
+      uses: azure/setup-helm@v3
+      with:
+         version: 'v3.6.1' # default is latest (stable)
 
-    - name: Terraform Validate
-      id: validate
-      run: terraform validate -no-color
-      working-directory: ./online-boutique-tf
-      continue-on-error: true
-    
-    - name: Terraform Apply
-      id: apply
-      run: terraform apply -auto-approve -input=false
-      working-directory: ./online-boutique-tf
+    - name: helm-deploy
+      id: deploy
+      run: |
+        helm install onlineboutique /home/runner/work/eks/eks/online-boutique-tf/helm --namespace=app --create-namespace --kubeconfig /home/runner/.kube/config
+      working-directory: /
+        

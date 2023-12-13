@@ -9,7 +9,7 @@ permissions:
 
 jobs:
   terraform:
-    name: Destroy
+    name: Delete Cluster
     runs-on: ubuntu-20.04
     defaults:
       run:

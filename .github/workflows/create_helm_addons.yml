@@ -1,4 +1,4 @@
-name: Install Argocd
+name: Install Helm Addons
 
 on:
   workflow_dispatch:
@@ -9,7 +9,7 @@ permissions:
 
 jobs:
   terraform:
-    name: Terraform Apply
+    name: Create Addons - Helm
     runs-on: ubuntu-20.04
     defaults:
       run:
@@ -49,5 +49,5 @@ jobs:
     
     - name: Terraform Apply
       id: apply
-      run: terraform apply -var-file enable_argocd.tfvars -auto-approve -input=false
+      run: terraform apply -var-file helm_addons.tfvars -auto-approve -input=false
       working-directory: ./eks-apps

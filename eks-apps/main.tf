@@ -83,7 +83,6 @@ module "eks_blueprints_kubernetes_addons" {
   enable_aws_for_fluentbit             = false
   # Let fluentbit create the cw log group
   aws_for_fluentbit_create_cw_log_group = false
-  enable_calico                         = var.enable_calico
   enable_cert_manager                   = var.enable_cert_manager
   enable_cluster_autoscaler             = false
   enable_grafana                        = false
