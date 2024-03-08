@@ -9,7 +9,7 @@ Create OIDC Resources (Provider and Role) to use temporary credentials for GA to
 4. This will create required OIDC resources for GA to use temorary credentials to access AWS.
 5. Update "role-to-assume" var in all the GA workflows to have you own account 
 
-Create EKS Cluster:
+Create EKS Cluster
 
 1. Edit ./eks-infra/main.tf "instance_types" to the node type you want.Currently it is t3.medium.
 2. Run the Github Action called "Create Cluster". This will:Create EKS Cluster, Managed NodeGroups, VPC and KMS Key.Other required resources will also be created.
@@ -32,13 +32,11 @@ Access the Sample App
     kubectl port-forward svc/frontend-external -n app 8081:80
 3. Go to http://localhost:8081/ in browser.
 
-Deletion:
-
-Uninstall Sample App
+Delete Sample App
 
 1. Run the Github Action called "Delete Sample App".This will delete the sample app.
 
-Uninstall Kubernetes Add-ons
+Delete Kubernetes Add-ons
 
 1. Edit ./eks-apps/delete_helm_addons.tfvars to include the vars for add-ons that need to be deleted.This can also be used to delete the add-ons selectively.Just be aware of any dependencies.
 2. Run the Github Action called "Delete Helm Addons". This will install the configured addons from the cluster.
