@@ -1,6 +1,6 @@
 # EKS Cluster, Addons and Sample app using Terraform
 
-Create OIDC Resources (Provider and Role) to use temporary credentials for GA to access your AWS account:
+**Create OIDC Resources (Provider and Role) to use temporary credentials for GA to access your AWS account**
 
 1. Make sure you are logged on to your AWS account locally.
 2. Go to ./ga-oidc.
@@ -9,22 +9,22 @@ Create OIDC Resources (Provider and Role) to use temporary credentials for GA to
 4. This will create required OIDC resources for GA to use temorary credentials to access AWS.
 5. Update "role-to-assume" var in all the GA workflows to have you own account 
 
-Create EKS Cluster
+**Create EKS Cluster**
 
 1. Edit ./eks-infra/main.tf "instance_types" to the node type you want.Currently it is t3.medium.
 2. Run the Github Action called "Create Cluster". This will:Create EKS Cluster, Managed NodeGroups, VPC and KMS Key.Other required resources will also be created.
 3. This Action will also install Calico CNI.
 
-Install Kubernetes Add-Ons
+**Install Kubernetes Add-Ons**
 
 1. Edit ./eks-apps/delete_helm_addons.tfvars to set vars for the required add-ons to true.Note that there are many more Add-ons available to be installed. Look at the code to see which ones can be enabled and add vars as needed.
 2. Run the Github Action called "Istall Helm Addons". This will install the configured addons to the cluster.
 
-Install Sample App
+**Install Sample App**
 
 1. Run the Github Action called "Install Sample App".This will install a sample microservices app provided by Google.
 
-Access the Sample App
+**Access the Sample App**
 
 1. Update kubeconfig using command below:
     aws eks update-kubeconfig --name eks-cluster --region eu-west-1 --role-arn arn:aws:iam::955210728575:role/ex-iam-github-oidc
@@ -32,11 +32,11 @@ Access the Sample App
     kubectl port-forward svc/frontend-external -n app 8081:80
 3. Go to http://localhost:8081/ in browser.
 
-Delete Sample App
+**Delete Sample App**
 
 1. Run the Github Action called "Delete Sample App".This will delete the sample app.
 
-Delete Kubernetes Add-ons
+**Delete Kubernetes Add-ons**
 
 1. Edit ./eks-apps/delete_helm_addons.tfvars to include the vars for add-ons that need to be deleted.This can also be used to delete the add-ons selectively.Just be aware of any dependencies.
 2. Run the Github Action called "Delete Helm Addons". This will install the configured addons from the cluster.
@@ -44,12 +44,12 @@ Delete Kubernetes Add-ons
     sh scripts/finalizer.sh <namespace that is stuck>
 4. Once this is done the GA workflow will complete.
 
-Delete the EKS Cluster.
+**Delete the EKS Cluster**
 
 1. Run the Github Action called "Delete Cluster". This will delete EKS Cluster, Managed NodeGroups, VPC, KMS Key and any other resources that were created.
 
 
-TBC:
+**Next Steps**
 
 1. Variabilize account_id in GA workflows.
 2. Variabilize instance_types.
@@ -61,5 +61,13 @@ TBC:
 8. Enable Istio/Kiali.
 9. Enable other important add-ons.
 10. Set up monitoring, tracing and metrics.
+
+**NOTE: This repo uses open source code. Please see the links below:**
+
+https://github.com/terraform-aws-modules/terraform-aws-eks
+
+https://github.com/aws-ia/terraform-aws-eks-blueprints
+
+https://github.com/GoogleCloudPlatform/microservices-demo
 
 

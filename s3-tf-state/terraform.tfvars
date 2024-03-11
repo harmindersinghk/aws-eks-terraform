@@ -1,1 +1,0 @@
-bucket_name = "tf-state-eks-2023"
