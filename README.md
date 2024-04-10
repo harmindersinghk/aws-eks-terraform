@@ -6,7 +6,7 @@
 2. Go to ./ga-oidc.
 3. Update variable "subjects" in the terraform.tfvars to your repo.
 3. Init/Apply terraform.
-4. This will create required OIDC resources for GA to use temorary credentials to access AWS.
+4. This will create required OIDC resources for GA to use temporary credentials to access AWS.
 5. Update "role-to-assume" var in all the GA workflows to have you own account 
 
 **Create EKS Cluster**
@@ -27,7 +27,7 @@
 **Access the Sample App**
 
 1. Update kubeconfig using command below:
-    aws eks update-kubeconfig --name eks-cluster --region eu-west-1 --role-arn arn:aws:iam::955210728575:role/ex-iam-github-oidc
+    aws eks update-kubeconfig --name eks-cluster --region eu-west-1 --role-arn arn:aws:iam::{$ACCOUNT_NUM}:role/ex-iam-github-oidc
 2. Port forward using command below:
     kubectl port-forward svc/frontend-external -n app 8081:80
 3. Go to http://localhost:8081/ in browser.

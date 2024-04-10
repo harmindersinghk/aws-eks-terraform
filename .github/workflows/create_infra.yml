@@ -26,7 +26,7 @@ jobs:
     - name: configure aws credentials
       uses: aws-actions/configure-aws-credentials@v1
       with:
-        role-to-assume: arn:aws:iam::955210728575:role/ex-iam-github-oidc
+        role-to-assume: arn:aws:iam::${{ secrets.ACCOUNT_NUM }}:role/ex-iam-github-oidc
         role-duration-seconds: 1800 # the ttl of the session, in seconds.
         aws-region: eu-west-1 # use your region here.
 
