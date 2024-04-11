@@ -9,6 +9,10 @@
 4. This will create required OIDC resources for GA to use temporary credentials to access AWS.
 5. Update "role-to-assume" var in all the GA workflows to have you own account 
 
+**Add Github Actions Secret for your AWS Account id**
+
+Add your AWS account id to your Girhub Actions secrets with name ACCOUNT_NUM. This is used by Github Actions workflows. You do not need to add any credentials as OIDC is used for Github to access the AWS account.
+
 **Create EKS Cluster**
 
 1. Edit ./eks-infra/main.tf "instance_types" to the node type you want.Currently it is t3.medium.
