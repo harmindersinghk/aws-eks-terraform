@@ -55,16 +55,15 @@ Add your AWS account id to your Girhub Actions secrets with name ACCOUNT_NUM. Th
 
 **Next Steps**
 
-1. Variabilize account_id in GA workflows.
-2. Variabilize instance_types.
-3. Create an ingress to access sample app.
-4. Use Argocd to install app. Had tried it for add-ons but that didn't work very well so decided to do that using helm.
-5. Check reason for add-on namespace stuck in "terminating" state for some add-ons.
-6. Any clean-up or refactor of code to use node-groups.
-7. Use load generator for the sample app.
-8. Enable Istio/Kiali.
-9. Enable other important add-ons.
-10. Set up monitoring, tracing and metrics.
+1. Variabilize instance_types.
+2. Create an ingress to access sample app.
+3. Use Argocd to install app. Had tried it for add-ons but that didn't work very well so decided to do that using helm.
+4. Check reason for add-on namespace stuck in "terminating" state for some add-ons.
+5. lean-up or refactor of code to use node-groups.
+6. Use load generator for the sample app.
+7. Enable Istio/Kiali.
+8. Enable other important add-ons.
+9. Set up monitoring, tracing and metrics.
 
 **NOTE: This repo uses open source code. Please see the links below:**
 
