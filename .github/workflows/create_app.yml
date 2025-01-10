@@ -47,6 +47,6 @@ jobs:
     - name: helm-deploy
       id: deploy
       run: |
-        helm install onlineboutique /home/runner/work/eks/eks/online-boutique-tf/helm --namespace=app --create-namespace --kubeconfig /home/runner/.kube/config
+        helm install onlineboutique /home/runner/work/aws-eks-terraform/aws-eks-terraform/online-boutique-tf/helm --namespace=app --create-namespace --kubeconfig /home/runner/.kube/config
       working-directory: /
         
