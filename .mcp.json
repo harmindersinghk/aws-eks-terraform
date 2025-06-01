@@ -1,0 +1,24 @@
+{
+    "mcpServers":{
+        "awslabs-core-mcp-server":{
+          "command":"uvx",
+          "args":[
+             "awslabs.core-mcp-server@latest"
+          ],
+          "env":{
+             "FASTMCP_LOG_LEVEL":"ERROR"
+          },
+          "autoApprove":[ ],
+          "disabled":false
+       },
+       "awslabs-eks-mcp-server": {
+      "command": "uvx",
+      "args": ["awslabs.eks-mcp-server@latest"],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR"
+      },
+      "autoApprove": [],
+      "disabled": false
+    }
+    }
+ }

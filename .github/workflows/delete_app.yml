@@ -10,7 +10,7 @@ permissions:
 jobs:
   terraform:
     name: Delete App - Helm
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: eks
