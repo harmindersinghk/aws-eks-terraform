@@ -34,7 +34,7 @@ jobs:
       id: install-aws-cli
       uses: unfor19/install-aws-cli-action@master
       with:
-        version: 1.19.100
+        version: 2.21.0
     - run: aws eks update-kubeconfig --name eks-cluster --region eu-west-1 --kubeconfig '~/.kube/config'
       working-directory: /
 
