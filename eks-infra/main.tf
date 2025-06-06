@@ -123,7 +123,7 @@ module "eks" {
   # EKS Managed Node Group(s)
   eks_managed_node_group_defaults = {
     ami_type       = "AL2_x86_64"
-    instance_types = ["t3.medium"]
+    instance_types = var.instance_types
     key_name       = "EKS"
 
     attach_cluster_primary_security_group = false
@@ -140,7 +140,7 @@ module "eks" {
       max_size     = 4
       desired_size = 2
 
-      instance_types = ["t3.medium"]
+      instance_types = var.instance_types
       capacity_type  = "SPOT"
       labels = {
         Environment = "test"
