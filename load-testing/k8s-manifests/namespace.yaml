@@ -1,0 +1,40 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: load-testing
+  labels:
+    name: load-testing
+    purpose: performance-testing
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: locust
+  namespace: load-testing
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: load-testing
+  name: locust-role
+rules:
+- apiGroups: [""]
+  resources: ["pods", "services", "configmaps"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["apps"]
+  resources: ["deployments", "replicasets"]
+  verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: locust-rolebinding
+  namespace: load-testing
+subjects:
+- kind: ServiceAccount
+  name: locust
+  namespace: load-testing
+roleRef:
+  kind: Role
+  name: locust-role
+  apiGroup: rbac.authorization.k8s.io

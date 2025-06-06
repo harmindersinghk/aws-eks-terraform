@@ -54,6 +54,43 @@ Add your AWS account ID to your GitHub Actions secrets with the name `ACCOUNT_NU
    ```
 3. Go to [http://localhost:8081/](http://localhost:8081/) in your browser.
 
+## Load Testing
+
+### Run Load Tests
+
+1. Run the GitHub Action called **"Run Load Test"**. This will:
+   - Deploy Locust load testing infrastructure
+   - Run configurable load tests against the sample app
+   - Generate performance reports
+   - Optionally clean up resources after testing
+
+2. Configure test parameters:
+   - **Users**: Number of concurrent users (default: 50)
+   - **Spawn Rate**: Users per second (default: 2)
+   - **Duration**: Test duration (default: 10m)
+   - **Test Type**: normal, stress, or spike testing
+
+### Manual Load Testing
+
+1. Deploy Locust manually:
+   ```bash
+   ./load-testing/scripts/deploy-locust.sh deploy
+   ```
+
+2. Access the Locust Web UI via the LoadBalancer URL or port-forward:
+   ```bash
+   kubectl port-forward service/locust-master 8089:8089 -n load-testing
+   ```
+
+3. Open [http://localhost:8089](http://localhost:8089) and configure your load test.
+
+4. Clean up when done:
+   ```bash
+   ./load-testing/scripts/deploy-locust.sh cleanup
+   ```
+
+For detailed load testing documentation, see [load-testing/README.md](load-testing/README.md).
+
 ## Cleanup Instructions
 
 ### Delete Sample App
