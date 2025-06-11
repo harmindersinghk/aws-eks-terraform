@@ -1,0 +1,13 @@
+currencyService:
+  resources:
+    requests:
+      memory: 128Mi
+    limits:
+      memory: 256Mi
+
+paymentService:
+  resources:
+    requests:
+      memory: 128Mi
+    limits:
+      memory: 256Mi
