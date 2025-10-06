@@ -47,7 +47,7 @@ resource "helm_release" "addon" {
     }
   }
 
-  dynamic "set_sensitive" {
+  dynamic "set" {
     iterator = each_item
     for_each = try(var.helm_config["set_sensitive"], null) != null ? concat(var.helm_config["set_sensitive"], var.set_sensitive_values) : var.set_sensitive_values
 
