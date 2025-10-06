@@ -32,9 +32,9 @@ resource "helm_release" "addon" {
   dependency_update          = try(var.helm_config["dependency_update"], false)
   replace                    = try(var.helm_config["replace"], false)
 
-  postrender {
-    binary_path = try(var.helm_config["postrender"], "")
-  }
+  postrender = try(var.helm_config["postrender"], "") != "" ? {
+    binary_path = var.helm_config["postrender"]
+  } : null
 
   dynamic "set" {
     iterator = each_item
@@ -47,7 +47,7 @@ resource "helm_release" "addon" {
     }
   }
 
-  dynamic "set" {
+  dynamic "set_sensitive" {
     iterator = each_item
     for_each = try(var.helm_config["set_sensitive"], null) != null ? concat(var.helm_config["set_sensitive"], var.set_sensitive_values) : var.set_sensitive_values
 
