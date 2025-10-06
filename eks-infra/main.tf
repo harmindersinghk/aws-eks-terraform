@@ -122,7 +122,7 @@ module "eks" {
 
   # EKS Managed Node Group(s)
   eks_managed_node_group_defaults = {
-    ami_type       = "AL2_x86_64"
+    ami_type       = "AL2023_x86_64_STANDARD"
     instance_types = var.instance_types
     key_name       = "EKS"
 
@@ -236,7 +236,7 @@ module "eks_managed_node_group" {
     module.eks.cluster_security_group_id,
   ]
 
-   ami_type       = "AL2_x86_64"
+   ami_type       = "AL2023_x86_64_STANDARD"
   # platform = "bottlerocket"
 
   # this will get added to what AWS provides
