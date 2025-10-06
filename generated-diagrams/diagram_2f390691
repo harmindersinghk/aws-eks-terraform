@@ -1,0 +1,70 @@
+digraph "EKS Terraform Architecture" {
+	graph [fontcolor="#2D3436" fontname="Sans-Serif" fontsize=15 label="EKS Terraform Architecture" nodesep=0.60 pad=2.0 rankdir=LR ranksep=0.75 splines=ortho]
+	node [fixedsize=true fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13 height=1.4 imagescale=true labelloc=b shape=box style=rounded width=1.4]
+	edge [color="#7B8894"]
+	"5df8a99cb70748f3b7030a7a9df401c4" [label="GitHub Actions" height=1.9 image="/Users/Harminder/.cache/uv/archive-v0/dGoiyHLaGjZxk8x2AiVuT/lib/python3.13/site-packages/resources/onprem/vcs/github.png" shape=none]
+	d5fc8784bba348538d0c598077d09b91 [label=Developers height=1.9 image="/Users/Harminder/.cache/uv/archive-v0/dGoiyHLaGjZxk8x2AiVuT/lib/python3.13/site-packages/resources/aws/general/users.png" shape=none]
+	subgraph "cluster_GitHub OIDC" {
+		graph [bgcolor="#E5F5FD" fontname="Sans-Serif" fontsize=12 label="GitHub OIDC" labeljust=l pencolor="#AEB6BE" rankdir=LR shape=box style=rounded]
+		"96d682597cad4de6a3c567b6a6af60fc" [label="OIDC Provider" height=1.9 image="/Users/Harminder/.cache/uv/archive-v0/dGoiyHLaGjZxk8x2AiVuT/lib/python3.13/site-packages/resources/aws/security/identity-and-access-management-iam.png" shape=none]
+		"5ff13f58cf034daea25c3a1cf12349ea" [label="OIDC Role" height=1.9 image="/Users/Harminder/.cache/uv/archive-v0/dGoiyHLaGjZxk8x2AiVuT/lib/python3.13/site-packages/resources/aws/security/identity-and-access-management-iam.png" shape=none]
+	}
+	subgraph "cluster_VPC (10.0.0.0/16)" {
+		graph [bgcolor="#E5F5FD" fontname="Sans-Serif" fontsize=12 label="VPC (10.0.0.0/16)" labeljust=l pencolor="#AEB6BE" rankdir=LR shape=box style=rounded]
+		"5c9b4e6bd5cd477cbf611426dcfc1a5a" [label=VPC height=1.9 image="/Users/Harminder/.cache/uv/archive-v0/dGoiyHLaGjZxk8x2AiVuT/lib/python3.13/site-packages/resources/aws/network/vpc.png" shape=none]
+		subgraph cluster_Networking {
+			graph [bgcolor="#EBF3E7" fontname="Sans-Serif" fontsize=12 label=Networking labeljust=l pencolor="#AEB6BE" rankdir=LR shape=box style=rounded]
+			"327647c5234e42ffa72e1afd1a0adc6c" [label="Internet Gateway" height=1.9 image="/Users/Harminder/.cache/uv/archive-v0/dGoiyHLaGjZxk8x2AiVuT/lib/python3.13/site-packages/resources/aws/network/internet-gateway.png" shape=none]
+			"3a251a5be99b48b590d694050006787c" [label="NAT Gateway" height=1.9 image="/Users/Harminder/.cache/uv/archive-v0/dGoiyHLaGjZxk8x2AiVuT/lib/python3.13/site-packages/resources/aws/network/nat-gateway.png" shape=none]
+			subgraph cluster_Subnets {
+				graph [bgcolor="#ECE8F6" fontname="Sans-Serif" fontsize=12 label=Subnets labeljust=l pencolor="#AEB6BE" rankdir=LR shape=box style=rounded]
+				d205b45f3bb84fac87fa7ad0d4f7d97a [label="Public Subnets" height=1.9 image="/Users/Harminder/.cache/uv/archive-v0/dGoiyHLaGjZxk8x2AiVuT/lib/python3.13/site-packages/resources/aws/network/public-subnet.png" shape=none]
+				df905f080c70486aaf24465b14e4beab [label="Private Subnets" height=1.9 image="/Users/Harminder/.cache/uv/archive-v0/dGoiyHLaGjZxk8x2AiVuT/lib/python3.13/site-packages/resources/aws/network/private-subnet.png" shape=none]
+				f047a518f75c4b3eb9f42ae37187f278 [label="Intra Subnets" height=1.9 image="/Users/Harminder/.cache/uv/archive-v0/dGoiyHLaGjZxk8x2AiVuT/lib/python3.13/site-packages/resources/aws/network/private-subnet.png" shape=none]
+			}
+		}
+	}
+	"29364dbc68b34979bb9e80191a286150" [label="KMS Key" height=1.9 image="/Users/Harminder/.cache/uv/archive-v0/dGoiyHLaGjZxk8x2AiVuT/lib/python3.13/site-packages/resources/aws/security/key-management-service.png" shape=none]
+	subgraph "cluster_EKS Cluster (eks-cluster)" {
+		graph [bgcolor="#E5F5FD" fontname="Sans-Serif" fontsize=12 label="EKS Cluster (eks-cluster)" labeljust=l pencolor="#AEB6BE" rankdir=LR shape=box style=rounded]
+		"94b545aabe6c41f2a9bafbc1fe646358" [label="EKS Control Plane" height=1.9 image="/Users/Harminder/.cache/uv/archive-v0/dGoiyHLaGjZxk8x2AiVuT/lib/python3.13/site-packages/resources/aws/compute/elastic-kubernetes-service.png" shape=none]
+		subgraph "cluster_Node Groups" {
+			graph [bgcolor="#EBF3E7" fontname="Sans-Serif" fontsize=12 label="Node Groups" labeljust=l pencolor="#AEB6BE" rankdir=LR shape=box style=rounded]
+			"98d1bb2ebb6943f58d6a985f7d5d9d6e" [label="Blue Node Group" height=1.9 image="/Users/Harminder/.cache/uv/archive-v0/dGoiyHLaGjZxk8x2AiVuT/lib/python3.13/site-packages/resources/aws/compute/elastic-kubernetes-service.png" shape=none]
+			"11faabb36b4f4888a79135a7c9bfc344" [label="Green Node Group" height=1.9 image="/Users/Harminder/.cache/uv/archive-v0/dGoiyHLaGjZxk8x2AiVuT/lib/python3.13/site-packages/resources/aws/compute/elastic-kubernetes-service.png" shape=none]
+			c508c017375743db8505f1d0c1c0e224 [label="Separate Node Group" height=1.9 image="/Users/Harminder/.cache/uv/archive-v0/dGoiyHLaGjZxk8x2AiVuT/lib/python3.13/site-packages/resources/aws/compute/elastic-kubernetes-service.png" shape=none]
+		}
+		subgraph "cluster_Kubernetes Add-ons" {
+			graph [bgcolor="#EBF3E7" fontname="Sans-Serif" fontsize=12 label="Kubernetes Add-ons" labeljust=l pencolor="#AEB6BE" rankdir=LR shape=box style=rounded]
+			d91a2b41079440f69522ef11a0de93f3 [label=CoreDNS height=1.9 image="/Users/Harminder/.cache/uv/archive-v0/dGoiyHLaGjZxk8x2AiVuT/lib/python3.13/site-packages/resources/k8s/network/svc.png" shape=none]
+			d7432d6b5d6742e7b942e25d5d5f2011 [label="Kube Proxy" height=1.9 image="/Users/Harminder/.cache/uv/archive-v0/dGoiyHLaGjZxk8x2AiVuT/lib/python3.13/site-packages/resources/k8s/network/svc.png" shape=none]
+			"8c5d232e4b0643dcbdca509e71f04da4" [label="Metrics Server" height=1.9 image="/Users/Harminder/.cache/uv/archive-v0/dGoiyHLaGjZxk8x2AiVuT/lib/python3.13/site-packages/resources/k8s/network/svc.png" shape=none]
+			"9b9caaf6d6d1437bb9561539261d609c" [label="Cert Manager" height=1.9 image="/Users/Harminder/.cache/uv/archive-v0/dGoiyHLaGjZxk8x2AiVuT/lib/python3.13/site-packages/resources/k8s/network/svc.png" shape=none]
+			"495dff9c607a4f7eb01ce2aa9579cdb4" [label=ArgoCD height=1.9 image="/Users/Harminder/.cache/uv/archive-v0/dGoiyHLaGjZxk8x2AiVuT/lib/python3.13/site-packages/resources/k8s/network/svc.png" shape=none]
+		}
+		subgraph "cluster_Sample Application" {
+			graph [bgcolor="#EBF3E7" fontname="Sans-Serif" fontsize=12 label="Sample Application" labeljust=l pencolor="#AEB6BE" rankdir=LR shape=box style=rounded]
+			e916154c35ac4f3c8492c9cb68a9d0f2 [label="Online Boutique" height=1.9 image="/Users/Harminder/.cache/uv/archive-v0/dGoiyHLaGjZxk8x2AiVuT/lib/python3.13/site-packages/resources/k8s/compute/deploy.png" shape=none]
+		}
+	}
+	"5df8a99cb70748f3b7030a7a9df401c4" -> "96d682597cad4de6a3c567b6a6af60fc" [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"96d682597cad4de6a3c567b6a6af60fc" -> "5ff13f58cf034daea25c3a1cf12349ea" [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"5ff13f58cf034daea25c3a1cf12349ea" -> "94b545aabe6c41f2a9bafbc1fe646358" [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	d5fc8784bba348538d0c598077d09b91 -> "327647c5234e42ffa72e1afd1a0adc6c" [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"327647c5234e42ffa72e1afd1a0adc6c" -> d205b45f3bb84fac87fa7ad0d4f7d97a [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	d205b45f3bb84fac87fa7ad0d4f7d97a -> "3a251a5be99b48b590d694050006787c" [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"3a251a5be99b48b590d694050006787c" -> df905f080c70486aaf24465b14e4beab [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	df905f080c70486aaf24465b14e4beab -> "98d1bb2ebb6943f58d6a985f7d5d9d6e" [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	df905f080c70486aaf24465b14e4beab -> "11faabb36b4f4888a79135a7c9bfc344" [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	df905f080c70486aaf24465b14e4beab -> c508c017375743db8505f1d0c1c0e224 [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	f047a518f75c4b3eb9f42ae37187f278 -> "94b545aabe6c41f2a9bafbc1fe646358" [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"29364dbc68b34979bb9e80191a286150" -> "94b545aabe6c41f2a9bafbc1fe646358" [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"94b545aabe6c41f2a9bafbc1fe646358" -> d91a2b41079440f69522ef11a0de93f3 [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"94b545aabe6c41f2a9bafbc1fe646358" -> d7432d6b5d6742e7b942e25d5d5f2011 [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"94b545aabe6c41f2a9bafbc1fe646358" -> "8c5d232e4b0643dcbdca509e71f04da4" [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"94b545aabe6c41f2a9bafbc1fe646358" -> "9b9caaf6d6d1437bb9561539261d609c" [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"94b545aabe6c41f2a9bafbc1fe646358" -> "495dff9c607a4f7eb01ce2aa9579cdb4" [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"98d1bb2ebb6943f58d6a985f7d5d9d6e" -> e916154c35ac4f3c8492c9cb68a9d0f2 [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	"11faabb36b4f4888a79135a7c9bfc344" -> e916154c35ac4f3c8492c9cb68a9d0f2 [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+	c508c017375743db8505f1d0c1c0e224 -> e916154c35ac4f3c8492c9cb68a9d0f2 [dir=forward fontcolor="#2D3436" fontname="Sans-Serif" fontsize=13]
+}

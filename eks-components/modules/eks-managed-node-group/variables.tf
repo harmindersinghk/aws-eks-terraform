@@ -204,11 +204,7 @@ variable "elastic_gpu_specifications" {
   default     = {}
 }
 
-variable "elastic_inference_accelerator" {
-  description = "Configuration block containing an Elastic Inference Accelerator to attach to the instance"
-  type        = map(string)
-  default     = {}
-}
+
 
 variable "enclave_options" {
   description = "Enable Nitro Enclaves on launched instances"

@@ -1,0 +1,107 @@
+digraph eks_architecture {
+  rankdir="TB";
+  
+  // Node styles
+  node [shape=box, style=filled, color=lightblue];
+  
+  // External components
+  github [label="GitHub Actions", color=orange];
+  users [label="Developers", color=orange];
+  
+  // OIDC components
+  subgraph cluster_oidc {
+    label="GitHub OIDC";
+    style=filled;
+    color=lightgrey;
+    
+    oidc_provider [label="OIDC Provider", color=orange];
+    oidc_role [label="OIDC Role", color=orange];
+  }
+  
+  // Security components
+  kms [label="KMS Key\n(Secrets Encryption)", color=orange];
+  sg [label="Security Group", color=orange];
+  
+  // VPC components
+  subgraph cluster_vpc {
+    label="VPC (10.0.0.0/16)";
+    style=filled;
+    color=lightgrey;
+    
+    igw [label="Internet Gateway", color=orange];
+    nat [label="NAT Gateway", color=orange];
+    public_subnets [label="Public Subnets\n(3 AZs)", color=orange];
+    private_subnets [label="Private Subnets\n(3 AZs)", color=orange];
+    intra_subnets [label="Intra Subnets\n(3 AZs)", color=orange];
+  }
+  
+  // EKS components
+  subgraph cluster_eks {
+    label="EKS Cluster (eks-cluster)";
+    style=filled;
+    color=lightgrey;
+    
+    control_plane [label="EKS Control Plane", color=lightblue];
+    blue_ng [label="Blue Node Group\n(t3.medium)", color=lightblue];
+    green_ng [label="Green Node Group\n(t3.medium, SPOT)", color=lightblue];
+    separate_ng [label="Separate Node Group", color=lightblue];
+    
+    // Add-ons
+    subgraph cluster_addons {
+      label="Kubernetes Add-ons";
+      style=filled;
+      color=lightgrey;
+      
+      coredns [label="CoreDNS", color=lightgreen];
+      kube_proxy [label="Kube Proxy", color=lightgreen];
+      metrics_server [label="Metrics Server", color=lightgreen];
+      cert_manager [label="Cert Manager", color=lightgreen];
+      argocd [label="ArgoCD", color=lightgreen];
+    }
+    
+    // Sample app
+    subgraph cluster_app {
+      label="Sample Application (Online Boutique)";
+      style=filled;
+      color=lightgrey;
+      
+      frontend [label="Frontend", color=lightgreen];
+      cart [label="Cart", color=lightgreen];
+      catalog [label="Catalog", color=lightgreen];
+      checkout [label="Checkout", color=lightgreen];
+      frontend_svc [label="Frontend Service", color=lightgreen];
+    }
+  }
+  
+  // Connections
+  github -> oidc_provider;
+  oidc_provider -> oidc_role;
+  oidc_role -> control_plane;
+  users -> igw;
+  igw -> public_subnets;
+  public_subnets -> nat;
+  nat -> private_subnets;
+  kms -> control_plane;
+  intra_subnets -> control_plane;
+  control_plane -> blue_ng;
+  control_plane -> green_ng;
+  control_plane -> separate_ng;
+  private_subnets -> blue_ng;
+  private_subnets -> green_ng;
+  private_subnets -> separate_ng;
+  sg -> blue_ng;
+  sg -> green_ng;
+  sg -> separate_ng;
+  blue_ng -> frontend;
+  frontend -> cart;
+  cart -> catalog;
+  catalog -> checkout;
+  frontend_svc -> frontend;
+  
+  // Add-on connections
+  control_plane -> coredns;
+  control_plane -> kube_proxy;
+  control_plane -> metrics_server;
+  control_plane -> cert_manager;
+  control_plane -> argocd;
+}
