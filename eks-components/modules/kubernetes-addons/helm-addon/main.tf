@@ -36,16 +36,22 @@ resource "helm_release" "addon" {
     binary_path = var.helm_config["postrender"]
   } : null
 
-  set {
-    name  = each_item.value.name
-    value = each_item.value.value
-    type  = try(each_item.value.type, null)
+  dynamic "set" {
+    for_each = var.set != null ? var.set : []
+    content {
+      name  = set.value.name
+      value = set.value.value
+      type  = try(set.value.type, null)
+    }
   }
 
-  set_sensitive {
-    name  = each.value.name
-    value = each.value.value
-    type  = try(each.value.type, null)
+  dynamic "set_sensitive" {
+    for_each = var.set_sensitive != null ? var.set_sensitive : []
+    content {
+      name  = set_sensitive.value.name
+      value = set_sensitive.value.value
+      type  = try(set_sensitive.value.type, null)
+    }
   }
   depends_on = [module.irsa]
 }
