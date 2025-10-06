@@ -101,13 +101,7 @@ resource "aws_launch_template" "this" {
   disable_api_termination = var.disable_api_termination
   ebs_optimized           = var.ebs_optimized
 
-  dynamic "elastic_gpu_specifications" {
-    for_each = var.elastic_gpu_specifications
 
-    content {
-      type = elastic_gpu_specifications.value.type
-    }
-  }
 
 
 

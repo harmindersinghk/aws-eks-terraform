@@ -198,11 +198,7 @@ variable "credit_specification" {
   default     = {}
 }
 
-variable "elastic_gpu_specifications" {
-  description = "The elastic GPU to attach to the instance"
-  type        = any
-  default     = {}
-}
+
 
 
 
