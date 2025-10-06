@@ -37,7 +37,7 @@ resource "helm_release" "addon" {
   } : null
 
   dynamic "set" {
-    for_each = var.set != null ? var.set : []
+    for_each = var.set_values != null ? var.set_values : []
     content {
       name  = set.value.name
       value = set.value.value
@@ -46,7 +46,7 @@ resource "helm_release" "addon" {
   }
 
   dynamic "set_sensitive" {
-    for_each = var.set_sensitive != null ? var.set_sensitive : []
+    for_each = var.set_sensitive_values != null ? var.set_sensitive_values : []
     content {
       name  = set_sensitive.value.name
       value = set_sensitive.value.value
