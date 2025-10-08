@@ -295,7 +295,7 @@ locals {
   # Fallback to Bottlerocket AMI type for K8s versions >= 1.33 when using default AL2 AMI
   # This is to address the deprecation of AL2 for newer EKS versions
   resolved_ami_type = var.ami_id != "" ? null : (
-    local.is_version_gte_1_33 && contains(keys(local.ami_type_mapping), var.ami_type) ?
+    local.is_version_gte_1_33 && try(contains(keys(local.ami_type_mapping), var.ami_type), false) ?
     local.ami_type_mapping[var.ami_type] :
     var.ami_type
   )
