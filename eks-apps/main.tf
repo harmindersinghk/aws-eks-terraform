@@ -9,7 +9,7 @@ provider "kubernetes" {
 }
 
 provider "helm" {
-  kubernetes {
+  kubernetes = {
     host                   = data.aws_eks_cluster.eks_infra.endpoint
     cluster_ca_certificate = base64decode(data.aws_eks_cluster.eks_infra.certificate_authority[0].data)
     token                  = data.aws_eks_cluster_auth.this.token
@@ -52,7 +52,7 @@ module "eks_blueprints_kubernetes_addons" {
   eks_oidc_provider    = data.aws_eks_cluster.eks_infra.identity[0].oidc[0].issuer
   eks_cluster_version  = data.aws_eks_cluster.eks_infra.version
 
-  enable_argocd = var.enable_argocd 
+  enable_argocd = var.enable_argocd
   # This example shows how to set default ArgoCD Admin Password using SecretsManager with Helm Chart set_sensitive values.
   argocd_helm_config = {
     set_sensitive = [
@@ -88,7 +88,7 @@ module "eks_blueprints_kubernetes_addons" {
   enable_grafana                        = false
   enable_karpenter                      = false
   enable_keda                           = false
-  enable_metrics_server                 = var.enable_metrics_server 
+  enable_metrics_server                 = var.enable_metrics_server
   enable_prometheus                     = false
   enable_traefik                        = false
   enable_vpa                            = false
@@ -116,7 +116,7 @@ resource "bcrypt_hash" "argo" {
 
 #tfsec:ignore:aws-ssm-secret-use-customer-key
 resource "aws_secretsmanager_secret" "argocd" {
-  count         = var.enable_argocd ? 1 : 0
+  count                   = var.enable_argocd ? 1 : 0
   name                    = "argocd"
   recovery_window_in_days = 0 # Set to zero for this example to force delete during Terraform destroy
 }

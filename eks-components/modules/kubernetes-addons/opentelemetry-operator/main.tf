@@ -33,12 +33,13 @@ data "aws_eks_addon_version" "this" {
 resource "aws_eks_addon" "adot" {
   count = var.enable_amazon_eks_adot ? 1 : 0
 
-  cluster_name             = var.addon_context.eks_cluster_id
-  addon_name               = local.name
-  addon_version            = try(var.addon_config.addon_version, data.aws_eks_addon_version.this[0].version)
-  resolve_conflicts        = try(var.addon_config.resolve_conflicts, "OVERWRITE")
-  service_account_role_arn = try(var.addon_config.service_account_role_arn, null)
-  preserve                 = try(var.addon_config.preserve, true)
+  cluster_name                = var.addon_context.eks_cluster_id
+  addon_name                  = local.name
+  addon_version               = try(var.addon_config.addon_version, data.aws_eks_addon_version.this[0].version)
+  resolve_conflicts_on_create = try(var.addon_config.resolve_conflicts_on_create, try(var.addon_config.resolve_conflicts, "OVERWRITE"))
+  resolve_conflicts_on_update = try(var.addon_config.resolve_conflicts_on_update, try(var.addon_config.resolve_conflicts, "OVERWRITE"))
+  service_account_role_arn    = try(var.addon_config.service_account_role_arn, null)
+  preserve                    = try(var.addon_config.preserve, true)
 
   tags = merge(
     var.addon_context.tags,
