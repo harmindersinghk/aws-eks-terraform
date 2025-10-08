@@ -302,7 +302,6 @@ module "eks_managed_node_group" {
   capacity_reservation_specification = try(each.value.capacity_reservation_specification, var.eks_managed_node_group_defaults.capacity_reservation_specification, {})
   cpu_options                        = try(each.value.cpu_options, var.eks_managed_node_group_defaults.cpu_options, {})
   credit_specification               = try(each.value.credit_specification, var.eks_managed_node_group_defaults.credit_specification, {})
-  elastic_gpu_specifications         = try(each.value.elastic_gpu_specifications, var.eks_managed_node_group_defaults.elastic_gpu_specifications, {})
   enclave_options                    = try(each.value.enclave_options, var.eks_managed_node_group_defaults.enclave_options, {})
   instance_market_options            = try(each.value.instance_market_options, var.eks_managed_node_group_defaults.instance_market_options, {})
   license_specifications             = try(each.value.license_specifications, var.eks_managed_node_group_defaults.license_specifications, {})
