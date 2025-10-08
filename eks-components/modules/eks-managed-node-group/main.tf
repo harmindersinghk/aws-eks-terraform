@@ -62,44 +62,13 @@ resource "aws_launch_template" "this" {
     }
   }
 
-  dynamic "capacity_reservation_specification" {
-    for_each = length(var.capacity_reservation_specification) > 0 ? [var.capacity_reservation_specification] : []
-
-    content {
-      capacity_reservation_preference = try(capacity_reservation_specification.value.capacity_reservation_preference, null)
-
-      dynamic "capacity_reservation_target" {
-        for_each = try([capacity_reservation_specification.value.capacity_reservation_target], [])
-
-        content {
-          capacity_reservation_id                 = try(capacity_reservation_target.value.capacity_reservation_id, null)
-          capacity_reservation_resource_group_arn = try(capacity_reservation_target.value.capacity_reservation_resource_group_arn, null)
-        }
-      }
-    }
-  }
-
-  dynamic "cpu_options" {
-    for_each = length(var.cpu_options) > 0 ? [var.cpu_options] : []
-
-    content {
-      core_count       = try(cpu_options.value.core_count, null)
-      threads_per_core = try(cpu_options.value.threads_per_core, null)
-    }
-  }
-
-  dynamic "credit_specification" {
-    for_each = length(var.credit_specification) > 0 ? [var.credit_specification] : []
-
-    content {
-      cpu_credits = try(credit_specification.value.cpu_credits, null)
-    }
-  }
-
-  default_version         = var.launch_template_default_version
-  description             = var.launch_template_description
-  disable_api_termination = var.disable_api_termination
-  ebs_optimized           = var.ebs_optimized
+  capacity_reservation_specification = var.capacity_reservation_specification
+  cpu_options                        = var.cpu_options
+  credit_specification               = var.credit_specification
+  default_version                    = var.launch_template_default_version
+  description                        = var.launch_template_description
+  disable_api_termination            = var.disable_api_termination
+  ebs_optimized                      = var.ebs_optimized
 
   dynamic "elastic_gpu_specifications" {
     for_each = var.elastic_gpu_specifications
@@ -109,21 +78,7 @@ resource "aws_launch_template" "this" {
     }
   }
 
-  dynamic "elastic_inference_accelerator" {
-    for_each = length(var.elastic_inference_accelerator) > 0 ? [var.elastic_inference_accelerator] : []
-
-    content {
-      type = elastic_inference_accelerator.value.type
-    }
-  }
-
-  dynamic "enclave_options" {
-    for_each = length(var.enclave_options) > 0 ? [var.enclave_options] : []
-
-    content {
-      enabled = enclave_options.value.enabled
-    }
-  }
+  enclave_options = var.enclave_options
 
   # Set on EKS managed node group, will fail if set here
   # https://docs.aws.amazon.com/eks/latest/userguide/launch-templates.html#launch-template-basics
@@ -150,25 +105,7 @@ resource "aws_launch_template" "this" {
   # https://docs.aws.amazon.com/eks/latest/userguide/launch-templates.html#launch-template-basics
   # instance_initiated_shutdown_behavior = var.instance_initiated_shutdown_behavior
 
-  dynamic "instance_market_options" {
-    for_each = length(var.instance_market_options) > 0 ? [var.instance_market_options] : []
-
-    content {
-      market_type = try(instance_market_options.value.market_type, null)
-
-      dynamic "spot_options" {
-        for_each = try([instance_market_options.value.spot_options], [])
-
-        content {
-          block_duration_minutes         = try(spot_options.value.block_duration_minutes, null)
-          instance_interruption_behavior = try(spot_options.value.instance_interruption_behavior, null)
-          max_price                      = try(spot_options.value.max_price, null)
-          spot_instance_type             = try(spot_options.value.spot_instance_type, null)
-          valid_until                    = try(spot_options.value.valid_until, null)
-        }
-      }
-    }
-  }
+  instance_market_options = var.instance_market_options
 
   # # Set on node group instead
   # instance_type = var.launch_template_instance_type
@@ -183,25 +120,8 @@ resource "aws_launch_template" "this" {
     }
   }
 
-  dynamic "maintenance_options" {
-    for_each = length(var.maintenance_options) > 0 ? [var.maintenance_options] : []
-
-    content {
-      auto_recovery = try(maintenance_options.value.auto_recovery, null)
-    }
-  }
-
-  dynamic "metadata_options" {
-    for_each = length(var.metadata_options) > 0 ? [var.metadata_options] : []
-
-    content {
-      http_endpoint               = try(metadata_options.value.http_endpoint, null)
-      http_protocol_ipv6          = try(metadata_options.value.http_protocol_ipv6, null)
-      http_put_response_hop_limit = try(metadata_options.value.http_put_response_hop_limit, null)
-      http_tokens                 = try(metadata_options.value.http_tokens, null)
-      instance_metadata_tags      = try(metadata_options.value.instance_metadata_tags, null)
-    }
-  }
+  maintenance_options = var.maintenance_options
+  metadata_options    = var.metadata_options
 
   dynamic "monitoring" {
     for_each = var.enable_monitoring ? [1] : []
@@ -242,30 +162,8 @@ resource "aws_launch_template" "this" {
     }
   }
 
-  dynamic "placement" {
-    for_each = length(var.placement) > 0 ? [var.placement] : []
-
-    content {
-      affinity                = try(placement.value.affinity, null)
-      availability_zone       = try(placement.value.availability_zone, null)
-      group_name              = try(placement.value.group_name, null)
-      host_id                 = try(placement.value.host_id, null)
-      host_resource_group_arn = try(placement.value.host_resource_group_arn, null)
-      partition_number        = try(placement.value.partition_number, null)
-      spread_domain           = try(placement.value.spread_domain, null)
-      tenancy                 = try(placement.value.tenancy, null)
-    }
-  }
-
-  dynamic "private_dns_name_options" {
-    for_each = length(var.private_dns_name_options) > 0 ? [var.private_dns_name_options] : []
-
-    content {
-      enable_resource_name_dns_aaaa_record = try(private_dns_name_options.value.enable_resource_name_dns_aaaa_record, null)
-      enable_resource_name_dns_a_record    = try(private_dns_name_options.value.enable_resource_name_dns_a_record, null)
-      hostname_type                        = try(private_dns_name_options.value.hostname_type, null)
-    }
-  }
+  placement                = var.placement
+  private_dns_name_options = var.private_dns_name_options
 
   ram_disk_id = var.ram_disk_id
 
@@ -334,23 +232,12 @@ resource "aws_eks_node_group" "this" {
   instance_types       = var.instance_types
   labels               = var.labels
 
-  dynamic "launch_template" {
-    for_each = var.use_custom_launch_template ? [1] : []
+  launch_template = var.use_custom_launch_template ? {
+    id      = local.launch_template_id
+    version = local.launch_template_version
+  } : null
 
-    content {
-      id      = local.launch_template_id
-      version = local.launch_template_version
-    }
-  }
-
-  dynamic "remote_access" {
-    for_each = length(var.remote_access) > 0 ? [var.remote_access] : []
-
-    content {
-      ec2_ssh_key               = try(remote_access.value.ec2_ssh_key, null)
-      source_security_group_ids = try(remote_access.value.source_security_group_ids, [])
-    }
-  }
+  remote_access = var.remote_access
 
   dynamic "taint" {
     for_each = var.taints
@@ -362,14 +249,7 @@ resource "aws_eks_node_group" "this" {
     }
   }
 
-  dynamic "update_config" {
-    for_each = length(var.update_config) > 0 ? [var.update_config] : []
-
-    content {
-      max_unavailable_percentage = try(update_config.value.max_unavailable_percentage, null)
-      max_unavailable            = try(update_config.value.max_unavailable, null)
-    }
-  }
+  update_config = var.update_config
 
   timeouts {
     create = lookup(var.timeouts, "create", null)
