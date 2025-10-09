@@ -1,1 +1,1 @@
-subjects = ["harmindersinghk/eks:*"]
+subjects = ["harmindersinghk/aws-eks-terraform:*"]
