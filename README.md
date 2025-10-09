@@ -44,15 +44,19 @@ Add your AWS account ID to your GitHub Actions secrets with the name `ACCOUNT_NU
 
 ### Access the Sample App
 
-1. Update kubeconfig using the command below:
+1.Create an env var using the command below:
    ```bash
-   aws eks update-kubeconfig --name eks-cluster --region eu-west-1 --role-arn arn:aws:iam::{$ACCOUNT_NUM}:role/ex-iam-github-oidc
+   export ACCOUNT_NUM="<your AWS accounr number>"
    ```
-2. Port forward using the command below:
+2. Update kubeconfig using the command below:
+   ```bash
+   aws eks update-kubeconfig --name eks-cluster --region eu-west-1 --role-arn arn:aws:iam::${ACCOUNT_NUM}:role/ex-iam-github-oidc
+   ```
+3. Port forward using the command below:
    ```bash
    kubectl port-forward svc/frontend-external -n app 8081:80
    ```
-3. Go to [http://localhost:8081/](http://localhost:8081/) in your browser.
+4. Go to [http://localhost:8081/](http://localhost:8081/) in your browser.
 
 ## Load Testing
 
