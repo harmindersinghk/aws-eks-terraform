@@ -31,11 +31,14 @@ jobs:
           "$ACTIONS_ID_TOKEN_REQUEST_URL" | jq .
 
 
-    - name: Debug OIDC token claims
-      working-directory: .
+    - name: Decode GitHub OIDC token claims
       run: |
-        echo "Decoded claims:"
-        echo "${{ steps.oidc.outputs.token }}" | cut -d '.' -f2 | base64 --decode | jq
+        echo "Requesting OIDC token from GitHub…"
+        RESPONSE=$(curl -s -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL")
+        TOKEN=$(echo "$RESPONSE" | jq -r '.value')
+        echo "Token received? $( [ -n "$TOKEN" ] && echo yes || echo no )"
+        echo "$TOKEN" | awk -F '.' '{print $2}' | base64 --decode | jq .
+
 
 
 
