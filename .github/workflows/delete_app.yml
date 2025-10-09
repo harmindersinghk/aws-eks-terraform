@@ -23,6 +23,17 @@ jobs:
       with:
         terraform_version: 1.3.0
 
+    - name: Debug OIDC token claims
+      env:
+        ACTIONS_ID_TOKEN_REQUEST_TOKEN: ${{ steps.identity_token.outputs.token }}
+        ACTIONS_ID_TOKEN_REQUEST_URL: ${{ steps.identity_token.outputs.url }}
+      run: |
+        echo "Fetching GitHub OIDC token claims..."
+        curl -sSL -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL" | jq '.claims'
+
+
+
+
     - name: configure aws credentials
       uses: aws-actions/configure-aws-credentials@v1
       with:
