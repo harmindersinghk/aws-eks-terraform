@@ -23,13 +23,16 @@ jobs:
       with:
         terraform_version: 1.3.0
 
-    - name: Debug OIDC token claims
-      env:
-        ACTIONS_ID_TOKEN_REQUEST_TOKEN: ${{ steps.identity_token.outputs.token }}
-        ACTIONS_ID_TOKEN_REQUEST_URL: ${{ steps.identity_token.outputs.url }}
+    - id: oidc
+      name: Request GitHub OIDC token
       run: |
-        echo "Fetching GitHub OIDC token claims..."
-        curl -sSL -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL" | jq '.claims'
+        echo "token=$(curl -s -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL" | jq -r '.value')" >> $GITHUB_OUTPUT
+
+    - name: Debug OIDC token claims
+      run: |
+        echo "Decoded claims:"
+        echo "${{ steps.oidc.outputs.token }}" | cut -d '.' -f2 | base64 --decode | jq
+
 
 
 
