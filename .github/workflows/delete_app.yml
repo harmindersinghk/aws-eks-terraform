@@ -23,28 +23,7 @@ jobs:
       with:
         terraform_version: 1.3.0
 
-    - name: Debug OIDC token
-      working-directory: .
-      run: |
-        echo "Fetching OIDC token..."
-        curl -sSL -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
-          "$ACTIONS_ID_TOKEN_REQUEST_URL" | jq .
-
-
-    - name: Decode GitHub OIDC token claims
-      working-directory: .
-      run: |
-        echo "Requesting OIDC token from GitHub…"
-        RESPONSE=$(curl -s -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL")
-        TOKEN=$(echo "$RESPONSE" | jq -r '.value')
-        echo "Token received? $( [ -n "$TOKEN" ] && echo yes || echo no )"
-        echo "$TOKEN" | awk -F '.' '{print $2}' | base64 --decode | jq .
-
-
-
-
-
-
+    
     - name: configure aws credentials
       uses: aws-actions/configure-aws-credentials@v4
       with:
