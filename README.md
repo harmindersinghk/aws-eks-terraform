@@ -44,7 +44,7 @@ Add your AWS account ID to your GitHub Actions secrets with the name `ACCOUNT_NU
 
 ### Access the Sample App
 
-1.Create an env var using the command below:
+1. Create an env var using the command below: 
    ```bash
    export ACCOUNT_NUM="<your AWS accounr number>"
    ```
