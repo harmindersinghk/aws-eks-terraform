@@ -15,7 +15,6 @@ resource "aws_eks_addon" "coredns" {
   cluster_name             = var.addon_context.eks_cluster_id
   addon_name               = local.name
   addon_version            = try(var.addon_config.addon_version, data.aws_eks_addon_version.this.version)
-  resolve_conflicts        = try(var.addon_config.resolve_conflicts, "OVERWRITE")
   service_account_role_arn = try(var.addon_config.service_account_role_arn, null)
   preserve                 = try(var.addon_config.preserve, true)
   configuration_values     = try(var.addon_config.configuration_values, null)
