@@ -23,10 +23,13 @@ jobs:
       with:
         terraform_version: 1.3.0
 
-    - id: oidc
-      name: Request GitHub OIDC token
+    - name: Debug OIDC token
+      working-directory: .
       run: |
-        echo "token=$(curl -s -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL" | jq -r '.value')" >> $GITHUB_OUTPUT
+        echo "Fetching OIDC token..."
+        curl -sSL -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+          "$ACTIONS_ID_TOKEN_REQUEST_URL" | jq .
+
 
     - name: Debug OIDC token claims
       run: |
