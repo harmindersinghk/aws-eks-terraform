@@ -32,6 +32,7 @@ jobs:
 
 
     - name: Debug OIDC token claims
+      working-directory: .
       run: |
         echo "Decoded claims:"
         echo "${{ steps.oidc.outputs.token }}" | cut -d '.' -f2 | base64 --decode | jq
