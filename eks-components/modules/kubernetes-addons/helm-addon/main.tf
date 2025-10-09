@@ -32,10 +32,6 @@ resource "helm_release" "addon" {
   dependency_update          = try(var.helm_config["dependency_update"], false)
   replace                    = try(var.helm_config["replace"], false)
 
-  postrender {
-    binary_path = try(var.helm_config["postrender"], "")
-  }
-
   set = try(var.helm_config["set"], null) != null ? distinct(concat(var.set_values, var.helm_config["set"])) : var.set_values
 
   set_sensitive = try(var.helm_config["set_sensitive"], null) != null ? concat(var.helm_config["set_sensitive"], var.set_sensitive_values) : var.set_sensitive_values
