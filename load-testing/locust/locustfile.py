@@ -1,0 +1,199 @@
+"""
+Locust load testing script for Online Boutique microservices demo.
+This script simulates realistic user behavior on the e-commerce application.
+"""
+
+import random
+import time
+from locust import HttpUser, task, between
+
+
+class OnlineBoutiqueUser(HttpUser):
+    """
+    Simulates a user browsing and shopping on the Online Boutique application.
+    """
+    
+    wait_time = between(1, 5)  # Wait 1-5 seconds between tasks
+    
+    def on_start(self):
+        """Initialize user session data"""
+        self.session_id = None
+        self.user_currency = random.choice(['USD', 'EUR', 'CAD', 'JPY'])
+        self.cart_items = []
+        
+        # Product catalog - these are the actual products in Online Boutique
+        self.products = [
+            "0PUK6V6EV0",  # Vintage Typewriter
+            "1YMWWN1N4O",  # Home Barista Kit
+            "2ZYFJ3GM2N",  # Film Camera
+            "66VCHSJNUP",  # Vintage Camera Lens
+            "6E92ZMYYFZ",  # Vintage Record Player
+            "9SIQT8TOJO",  # City Bike
+            "L9ECAV7KIM",  # Air Plant
+            "LS4PSXUNUM",  # Succulent
+            "OLJCESPC7Z"   # Metal Camping Mug
+        ]
+    
+    @task(10)
+    def browse_homepage(self):
+        """Visit the homepage - most common action"""
+        response = self.client.get("/")
+        if response.status_code == 200:
+            # Extract session ID from response if available
+            if 'session_id' in response.cookies:
+                self.session_id = response.cookies['session_id']
+    
+    @task(8)
+    def browse_products(self):
+        """Browse product catalog"""
+        self.client.get("/")
+        
+        # Sometimes browse by category
+        if random.random() < 0.3:
+            categories = ['photography', 'vintage', 'gardening', 'kitchen']
+            category = random.choice(categories)
+            self.client.get(f"/?category_name={category}")
+    
+    @task(6)
+    def view_product(self):
+        """View individual product details"""
+        product_id = random.choice(self.products)
+        response = self.client.get(f"/product/{product_id}")
+        
+        # Sometimes add to cart after viewing
+        if response.status_code == 200 and random.random() < 0.3:
+            self.add_to_cart(product_id)
+    
+    @task(3)
+    def add_to_cart(self, product_id=None):
+        """Add item to shopping cart"""
+        if not product_id:
+            product_id = random.choice(self.products)
+        
+        quantity = random.randint(1, 3)
+        
+        response = self.client.post("/cart", data={
+            'product_id': product_id,
+            'quantity': quantity
+        })
+        
+        if response.status_code in [200, 302]:
+            self.cart_items.append({
+                'product_id': product_id,
+                'quantity': quantity
+            })
+    
+    @task(2)
+    def view_cart(self):
+        """View shopping cart contents"""
+        self.client.get("/cart")
+    
+    @task(1)
+    def checkout_flow(self):
+        """Complete checkout process"""
+        if not self.cart_items:
+            # Add something to cart first
+            self.add_to_cart()
+        
+        # View cart
+        self.client.get("/cart")
+        
+        # Go to checkout
+        response = self.client.get("/cart/checkout")
+        
+        if response.status_code == 200:
+            # Fill checkout form
+            checkout_data = {
+                'email': f'test{random.randint(1000, 9999)}@example.com',
+                'street_address': f'{random.randint(100, 999)} Test St',
+                'zip_code': f'{random.randint(10000, 99999)}',
+                'city': random.choice(['New York', 'Los Angeles', 'Chicago', 'Houston']),
+                'state': random.choice(['NY', 'CA', 'IL', 'TX']),
+                'country': 'United States',
+                'credit_card_number': '4432-8015-6152-0454',  # Test card
+                'credit_card_expiration_month': random.randint(1, 12),
+                'credit_card_expiration_year': random.randint(2024, 2028),
+                'credit_card_cvv': random.randint(100, 999)
+            }
+            
+            # Submit order
+            response = self.client.post("/cart/checkout", data=checkout_data)
+            
+            if response.status_code in [200, 302]:
+                # Clear cart after successful checkout
+                self.cart_items = []
+    
+    @task(2)
+    def change_currency(self):
+        """Change currency preference"""
+        currency = random.choice(['USD', 'EUR', 'CAD', 'JPY', 'GBP'])
+        self.client.post("/setCurrency", data={'currency_code': currency})
+        self.user_currency = currency
+    
+    @task(1)
+    def search_products(self):
+        """Search for products"""
+        search_terms = [
+            'camera', 'vintage', 'plant', 'bike', 'mug', 
+            'typewriter', 'barista', 'record', 'lens'
+        ]
+        query = random.choice(search_terms)
+        self.client.get(f"/?q={query}")
+    
+    @task(1)
+    def view_recommendations(self):
+        """View product recommendations"""
+        product_id = random.choice(self.products)
+        self.client.get(f"/product/{product_id}")
+        
+        # Recommendations are usually loaded via AJAX
+        self.client.get(f"/recommendations?product_id={product_id}")
+
+
+class AdminUser(HttpUser):
+    """
+    Simulates admin/monitoring user accessing health endpoints.
+    Lower frequency but important for monitoring.
+    """
+    
+    wait_time = between(10, 30)  # Less frequent checks
+    weight = 1  # Much lower weight than regular users
+    
+    @task(5)
+    def health_check(self):
+        """Check application health"""
+        self.client.get("/health")
+    
+    @task(3)
+    def readiness_check(self):
+        """Check application readiness"""
+        self.client.get("/ready")
+    
+    @task(2)
+    def metrics_check(self):
+        """Check metrics endpoint if available"""
+        self.client.get("/metrics")
+    
+    @task(1)
+    def robots_txt(self):
+        """Check robots.txt"""
+        self.client.get("/robots.txt")
+
+
+class HighVolumeUser(OnlineBoutiqueUser):
+    """
+    Simulates high-volume users (like bots or power users).
+    Used for stress testing scenarios.
+    """
+    
+    wait_time = between(0.5, 2)  # Faster actions
+    weight = 1  # Lower weight, used only for stress tests
+    
+    @task(15)
+    def rapid_browsing(self):
+        """Rapid page browsing"""
+        for _ in range(random.randint(3, 8)):
+            self.client.get("/")
+            product_id = random.choice(self.products)
+            self.client.get(f"/product/{product_id}")
+            time.sleep(0.1)  # Very short delay
