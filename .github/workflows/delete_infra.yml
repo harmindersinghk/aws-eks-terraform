@@ -16,7 +16,9 @@ jobs:
         working-directory: eks
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
 
     - name: Use Terraform 1.3.0
       uses: hashicorp/setup-terraform@v2
@@ -30,9 +32,33 @@ jobs:
         role-duration-seconds: 900 # the ttl of the session, in seconds.
         aws-region: eu-west-1 # use your region here.
 
+    - name: Debug Git Ref
+      run: |
+        git rev-parse HEAD
+        git branch --show-current
+        git status --short
+        git log -1 --stat
+
+    - name: Debug Module Files
+      run: |
+        ls -la
+        ls -la ./eks-infra
+        ls -la ./eks-components/modules/kms
+        ls -la ./eks-components/modules/vpc
+        ls -la ./eks-components/modules/cluster
+        ls -la ./eks-components/modules/eks-managed-node-group
+        sed -n '1,200p' ./eks-components/modules/kms/outputs.tf
+        sed -n '1,240p' ./eks-components/modules/vpc/outputs.tf
+        sed -n '1,220p' ./eks-components/modules/eks-managed-node-group/outputs.tf
+        sed -n '1,240p' ./eks-components/modules/cluster/outputs.tf
+
     - name: Terraform Init
       id: init
       run: terraform init
+      working-directory: ./eks-infra
+
+    - name: Terraform Providers
+      run: terraform providers
       working-directory: ./eks-infra
     
     - name: Terraform Destroy

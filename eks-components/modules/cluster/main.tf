@@ -10,7 +10,7 @@ data "aws_iam_session_context" "current" {
 }
 
 locals {
-  create = var.create  
+  create = var.create
 
   cluster_role = try(aws_iam_role.this[0].arn, var.iam_role_arn)
 
@@ -386,12 +386,12 @@ resource "aws_eks_addon" "this" {
   cluster_name = aws_eks_cluster.this[0].name
   addon_name   = try(each.value.name, each.key)
 
-  addon_version            = try(each.value.addon_version, data.aws_eks_addon_version.this[each.key].version)
-  configuration_values     = try(each.value.configuration_values, null)
-  preserve                 = try(each.value.preserve, null)
+  addon_version               = try(each.value.addon_version, data.aws_eks_addon_version.this[each.key].version)
+  configuration_values        = try(each.value.configuration_values, null)
+  preserve                    = try(each.value.preserve, null)
   resolve_conflicts_on_create = try(each.value.resolve_conflicts_on_create, "OVERWRITE")
   resolve_conflicts_on_update = try(each.value.resolve_conflicts_on_update, "OVERWRITE")
-  service_account_role_arn = try(each.value.service_account_role_arn, null)
+  service_account_role_arn    = try(each.value.service_account_role_arn, null)
 
   timeouts {
     create = try(each.value.timeouts.create, var.cluster_addons_timeouts.create, null)
@@ -413,12 +413,12 @@ resource "aws_eks_addon" "before_compute" {
   cluster_name = aws_eks_cluster.this[0].name
   addon_name   = try(each.value.name, each.key)
 
-  addon_version            = try(each.value.addon_version, data.aws_eks_addon_version.this[each.key].version)
-  configuration_values     = try(each.value.configuration_values, null)
-  preserve                 = try(each.value.preserve, null)
+  addon_version               = try(each.value.addon_version, data.aws_eks_addon_version.this[each.key].version)
+  configuration_values        = try(each.value.configuration_values, null)
+  preserve                    = try(each.value.preserve, null)
   resolve_conflicts_on_create = try(each.value.resolve_conflicts_on_create, "OVERWRITE")
   resolve_conflicts_on_update = try(each.value.resolve_conflicts_on_update, "OVERWRITE")
-  service_account_role_arn = try(each.value.service_account_role_arn, null)
+  service_account_role_arn    = try(each.value.service_account_role_arn, null)
 
   timeouts {
     create = try(each.value.timeouts.create, var.cluster_addons_timeouts.create, null)
@@ -496,7 +496,7 @@ locals {
   }
 }
 
-resource "kubernetes_config_map" "aws_auth" {
+resource "kubernetes_config_map_v1" "aws_auth" {
   count = var.create && var.create_aws_auth_configmap ? 1 : 0
 
   metadata {
@@ -527,6 +527,6 @@ resource "kubernetes_config_map_v1_data" "aws_auth" {
 
   depends_on = [
     # Required for instances where the configmap does not exist yet to avoid race condition
-    kubernetes_config_map.aws_auth,
+    kubernetes_config_map_v1.aws_auth,
   ]
 }
