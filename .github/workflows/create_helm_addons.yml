@@ -11,9 +11,6 @@ jobs:
   terraform:
     name: Create Addons - Helm
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: eks
     steps:
     - name: Checkout
       uses: actions/checkout@v2
