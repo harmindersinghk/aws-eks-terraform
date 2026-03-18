@@ -1,15 +1,29 @@
+# Copyright 2024 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 # Default values for onlineboutique.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
 images:
-  repository: gcr.io/google-samples/microservices-demo
+  repository: us-central1-docker.pkg.dev/google-samples/microservices-demo
   # Overrides the image tag whose default is the chart appVersion.
   tag: ""
 
 serviceAccounts:
   # Specifies whether service accounts should be created.
-  create: false
+  create: true
   # Annotations to add to the service accounts.
   annotations: {}
   # Annotations to add only for the cartservice app. This allows to follow the least privilege principle where only cartservice needs to connect to external database for example via Workload Identity.
@@ -42,16 +56,19 @@ seccompProfile:
   enable: false
   type: RuntimeDefault
 
+securityContext:
+  enable: true
+
 adService:
   create: true
   name: adservice
   resources:
     requests:
       cpu: 200m
-      memory: 300Mi
+      memory: 180Mi
     limits:
-      cpu: 500m
-      memory: 500Mi
+      cpu: 300m
+      memory: 300Mi
 
 cartService:
   create: true
@@ -59,10 +76,10 @@ cartService:
   resources:
     requests:
       cpu: 200m
-      memory: 64Mi
+      memory: 128Mi
     limits:
       cpu: 300m
-      memory: 128Mi
+      memory: 256Mi
 
 checkoutService:
   create: true
@@ -140,10 +157,10 @@ paymentService:
   resources:
     requests:
       cpu: 100m
-      memory: 64Mi
+      memory: 128Mi
     limits:
       cpu: 200m
-      memory: 128Mi
+      memory: 256Mi
 
 productCatalogService:
   create: true
@@ -195,3 +212,9 @@ cartDatabase:
     endpointAddress: ""
     endpointPort: ""
     certificate: ""
+
+# @TODO: This service is not currently available in Helm.
+# https://github.com/GoogleCloudPlatform/microservices-demo/tree/main/kustomize/components/shopping-assistant
+shoppingAssistantService:
+  create: false
+  name: shoppingassistantservice
