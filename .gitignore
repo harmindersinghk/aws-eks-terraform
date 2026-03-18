@@ -9,7 +9,5 @@ terraform.tfstate.backup
 *.tfstate.*
 **/tf_plan_changes
 **/terraform.plan
-**/.terraform.lock.hcl
 *plan.out
 *plan.out.json
-*lock.hcl

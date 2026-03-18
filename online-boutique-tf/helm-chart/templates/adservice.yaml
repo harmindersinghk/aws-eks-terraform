@@ -57,16 +57,23 @@ spec:
         env:
         - name: PORT
           value: "9555"
+        # Disable Google Cloud Profiler agent to prevent SIGSEGV crashes
+        - name: DISABLE_PROFILER
+          value: "1"
+        - name: DISABLE_TRACING
+          value: "1"
         resources:
           {{- toYaml .Values.adService.resources | nindent 10 }}
         readinessProbe:
-          initialDelaySeconds: 20
+          initialDelaySeconds: 30
           periodSeconds: 15
+          timeoutSeconds: 3
           grpc:
             port: 9555
         livenessProbe:
-          initialDelaySeconds: 20
+          initialDelaySeconds: 30
           periodSeconds: 15
+          timeoutSeconds: 3
           grpc:
             port: 9555
 ---

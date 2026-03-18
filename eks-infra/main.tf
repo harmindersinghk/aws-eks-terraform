@@ -179,8 +179,11 @@ module "eks" {
   #   }
   # }
 
-  # aws-auth configmap
-  manage_aws_auth_configmap = true
+  # Managing aws-auth via the Kubernetes provider in the same stack that creates
+  # or destroys the cluster is fragile because the provider needs a live API
+  # endpoint during both operations. Apply aws-auth separately after the cluster
+  # exists if you need to customize it.
+  manage_aws_auth_configmap = false
 
   aws_auth_node_iam_role_arns_non_windows = [
     module.eks_managed_node_group.iam_role_arn,
@@ -236,7 +239,7 @@ module "eks_managed_node_group" {
     module.eks.cluster_security_group_id,
   ]
 
-   ami_type       = "AL2_x86_64"
+  ami_type = "AL2_x86_64"
   # platform = "bottlerocket"
 
   # this will get added to what AWS provides
@@ -343,5 +346,4 @@ module "kms" {
 
   tags = local.tags
 }
-
 

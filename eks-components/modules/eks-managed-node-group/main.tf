@@ -101,21 +101,6 @@ resource "aws_launch_template" "this" {
   disable_api_termination = var.disable_api_termination
   ebs_optimized           = var.ebs_optimized
 
-  dynamic "elastic_gpu_specifications" {
-    for_each = var.elastic_gpu_specifications
-
-    content {
-      type = elastic_gpu_specifications.value.type
-    }
-  }
-
-  dynamic "elastic_inference_accelerator" {
-    for_each = length(var.elastic_inference_accelerator) > 0 ? [var.elastic_inference_accelerator] : []
-
-    content {
-      type = elastic_inference_accelerator.value.type
-    }
-  }
 
   dynamic "enclave_options" {
     for_each = length(var.enclave_options) > 0 ? [var.enclave_options] : []
@@ -300,6 +285,21 @@ resource "aws_launch_template" "this" {
 ################################################################################
 
 locals {
+  is_version_gte_1_33 = try(tonumber(substr(var.cluster_version, 0, 4)) >= 1.33, false)
+
+  ami_type_mapping = {
+    "AL2_x86_64" = "BOTTLEROCKET_x86_64",
+    "AL2_ARM_64" = "BOTTLEROCKET_ARM_64",
+  }
+
+  # Fallback to Bottlerocket AMI type for K8s versions >= 1.33 when using default AL2 AMI
+  # This is to address the deprecation of AL2 for newer EKS versions
+  resolved_ami_type = var.ami_id != "" ? null : (
+    local.is_version_gte_1_33 && try(contains(keys(local.ami_type_mapping), var.ami_type), false) ?
+    local.ami_type_mapping[var.ami_type] :
+    var.ami_type
+  )
+
   launch_template_id = var.create && var.create_launch_template ? try(aws_launch_template.this[0].id, null) : var.launch_template_id
   # Change order to allow users to set version priority before using defaults
   launch_template_version = coalesce(var.launch_template_version, try(aws_launch_template.this[0].default_version, "$Default"))
@@ -324,7 +324,7 @@ resource "aws_eks_node_group" "this" {
   node_group_name_prefix = var.use_name_prefix ? "${var.name}-" : null
 
   # https://docs.aws.amazon.com/eks/latest/userguide/launch-templates.html#launch-template-custom-ami
-  ami_type        = var.ami_id != "" ? null : var.ami_type
+  ami_type = local.resolved_ami_type
   release_version = var.ami_id != "" ? null : var.ami_release_version
   version         = var.ami_id != "" ? null : var.cluster_version
 
