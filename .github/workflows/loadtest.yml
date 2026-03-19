@@ -1,0 +1,127 @@
+name: Run Load Test
+
+on:
+  workflow_dispatch:
+    inputs:
+      test_type:
+        description: Test profile used when custom values are omitted
+        required: true
+        default: normal
+        type: choice
+        options:
+          - normal
+          - stress
+          - spike
+      users:
+        description: Concurrent users override
+        required: false
+        type: string
+      spawn_rate:
+        description: Users spawned per second override
+        required: false
+        type: string
+      duration:
+        description: Run time override like 30s, 10m, or 1h
+        required: false
+        type: string
+      cleanup:
+        description: Remove the load-testing namespace after the run
+        required: true
+        default: true
+        type: boolean
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  loadtest:
+    name: Run Locust Load Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      AWS_REGION: eu-west-1
+      EKS_CLUSTER_NAME: eks-cluster
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.ACCOUNT_NUM }}:role/ex-iam-github-oidc
+          role-duration-seconds: 3600
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v4
+        with:
+          version: v1.30.0
+
+      - name: Update kubeconfig
+        run: aws eks update-kubeconfig --name "$EKS_CLUSTER_NAME" --region "$AWS_REGION"
+
+      - name: Resolve test parameters
+        id: params
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          test_type="${{ github.event.inputs.test_type }}"
+          users="${{ github.event.inputs.users }}"
+          spawn_rate="${{ github.event.inputs.spawn_rate }}"
+          duration="${{ github.event.inputs.duration }}"
+
+          case "$test_type" in
+            normal)
+              default_users=50
+              default_spawn_rate=2
+              default_duration=10m
+              ;;
+            stress)
+              default_users=200
+              default_spawn_rate=10
+              default_duration=15m
+              ;;
+            spike)
+              default_users=500
+              default_spawn_rate=50
+              default_duration=5m
+              ;;
+            *)
+              echo "Unsupported test type: $test_type" >&2
+              exit 1
+              ;;
+          esac
+
+          if [[ -z "$users" ]]; then
+            users="$default_users"
+          fi
+
+          if [[ -z "$spawn_rate" ]]; then
+            spawn_rate="$default_spawn_rate"
+          fi
+
+          if [[ -z "$duration" ]]; then
+            duration="$default_duration"
+          fi
+
+          echo "users=$users" >> "$GITHUB_OUTPUT"
+          echo "spawn_rate=$spawn_rate" >> "$GITHUB_OUTPUT"
+          echo "duration=$duration" >> "$GITHUB_OUTPUT"
+
+      - name: Run load test
+        env:
+          USERS: ${{ steps.params.outputs.users }}
+          SPAWN_RATE: ${{ steps.params.outputs.spawn_rate }}
+          RUN_TIME: ${{ steps.params.outputs.duration }}
+          AUTO_CLEANUP: ${{ github.event.inputs.cleanup }}
+        run: ./load-testing/scripts/run-load-test.sh
+
+      - name: Upload load test artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: load-test-results
+          path: load-testing-artifacts
+          if-no-files-found: warn
