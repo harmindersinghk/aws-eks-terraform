@@ -1,0 +1,13 @@
+global:
+  imageRegistry: ghcr.io/cnoe-io
+
+ai-platform-engineering:
+  enabled: true
+  image:
+    repository: ai-platform-engineering
+    tag: stable
+
+agent-github:
+  enabled: true
+  secrets:
+    secretName: agent-secrets

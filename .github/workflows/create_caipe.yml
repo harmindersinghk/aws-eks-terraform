@@ -1,0 +1,160 @@
+name: Install CAIPE
+
+on:
+  workflow_dispatch:
+    inputs:
+      cluster_name:
+        description: EKS cluster name
+        required: true
+        default: eks-cluster
+      aws_region:
+        description: AWS region
+        required: true
+        default: eu-west-1
+      namespace:
+        description: Kubernetes namespace for CAIPE
+        required: true
+        default: ai-platform
+      release_name:
+        description: Helm release name
+        required: true
+        default: ai-platform-engineering
+      prompt_config_name:
+        description: CAIPE prompt config
+        required: true
+        default: deep_agent
+      enable_github_agent:
+        description: Enable CAIPE GitHub agent
+        required: true
+        default: "false"
+        type: choice
+        options:
+          - "false"
+          - "true"
+      chart_version:
+        description: Optional chart version. Leave blank to use the latest published chart.
+        required: false
+        default: ""
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  helm:
+    name: Deploy CAIPE with Helm
+    runs-on: ubuntu-latest
+    env:
+      KUBECONFIG: /home/runner/.kube/config
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: arn:aws:iam::${{ secrets.ACCOUNT_NUM }}:role/ex-iam-github-oidc
+        role-duration-seconds: 1800
+        aws-region: ${{ github.event.inputs.aws_region }}
+
+    - name: Install AWS CLI
+      uses: unfor19/install-aws-cli-action@master
+      with:
+        version: 2.21.0
+
+    - name: Update kubeconfig
+      run: aws eks update-kubeconfig --name "${{ github.event.inputs.cluster_name }}" --region "${{ github.event.inputs.aws_region }}" --kubeconfig "${KUBECONFIG}"
+      working-directory: /
+
+    - name: Setup Helm
+      uses: azure/setup-helm@v4
+      with:
+        version: v3.18.2
+
+    - name: Create namespace
+      run: kubectl create namespace "${{ github.event.inputs.namespace }}" --dry-run=client -o yaml | kubectl apply -f -
+      working-directory: /
+
+    - name: Create agent secrets
+      env:
+        ENABLE_GITHUB_AGENT: ${{ github.event.inputs.enable_github_agent }}
+        GITHUB_PERSONAL_ACCESS_TOKEN: ${{ secrets.CAIPE_GITHUB_PERSONAL_ACCESS_TOKEN }}
+        AZURE_OPENAI_API_KEY: ${{ secrets.CAIPE_AZURE_OPENAI_API_KEY }}
+        AZURE_OPENAI_ENDPOINT: ${{ secrets.CAIPE_AZURE_OPENAI_ENDPOINT }}
+        AZURE_OPENAI_DEPLOYMENT_NAME: ${{ secrets.CAIPE_AZURE_OPENAI_DEPLOYMENT_NAME }}
+        AZURE_OPENAI_API_VERSION: ${{ secrets.CAIPE_AZURE_OPENAI_API_VERSION }}
+        OPENAI_API_KEY: ${{ secrets.CAIPE_OPENAI_API_KEY }}
+      run: |
+        args=(
+          create secret generic agent-secrets
+          --namespace "${{ github.event.inputs.namespace }}"
+          --dry-run=client
+          -o yaml
+        )
+
+        required_vars=(
+          OPENAI_API_KEY
+        )
+
+        if [ "${ENABLE_GITHUB_AGENT}" = "true" ]; then
+          required_vars+=(GITHUB_PERSONAL_ACCESS_TOKEN)
+        fi
+
+        for name in "${required_vars[@]}"; do
+          value="${!name}"
+          if [ -z "${value}" ]; then
+            echo "Missing required GitHub Actions secret mapped to ${name}"
+            exit 1
+          fi
+        done
+
+        optional_vars=(
+          OPENAI_API_KEY
+          AZURE_OPENAI_API_KEY
+          AZURE_OPENAI_ENDPOINT
+          AZURE_OPENAI_DEPLOYMENT_NAME
+          AZURE_OPENAI_API_VERSION
+        )
+
+        if [ "${ENABLE_GITHUB_AGENT}" = "true" ]; then
+          optional_vars=(GITHUB_PERSONAL_ACCESS_TOKEN "${optional_vars[@]}")
+        fi
+
+        for name in "${optional_vars[@]}"; do
+          value="${!name}"
+          if [ -n "${value}" ]; then
+            args+=(--from-literal="${name}=${value}")
+          fi
+        done
+
+        kubectl "${args[@]}" | kubectl apply -f -
+      working-directory: /
+
+    - name: Install CAIPE chart
+      run: |
+        chart_ref="oci://ghcr.io/cnoe-io/helm-charts/ai-platform-engineering"
+        chart_version="${{ github.event.inputs.chart_version }}"
+
+        helm_args=(
+          upgrade --install "${{ github.event.inputs.release_name }}" "${chart_ref}"
+          --namespace "${{ github.event.inputs.namespace }}"
+          --create-namespace
+          --values "${{ github.workspace }}/caipe/values-caipe.yaml"
+          --set-string "promptConfigName=${{ github.event.inputs.prompt_config_name }}"
+          --set "agent-github.enabled=${{ github.event.inputs.enable_github_agent }}"
+          --wait
+          --timeout 15m
+        )
+
+        if [ -n "${chart_version}" ]; then
+          helm_args+=(--version "${chart_version}")
+        fi
+
+        helm "${helm_args[@]}"
+      working-directory: /
+
+    - name: Verify deployment
+      run: |
+        kubectl get pods -n "${{ github.event.inputs.namespace }}"
+        kubectl get services -n "${{ github.event.inputs.namespace }}"
+      working-directory: /
