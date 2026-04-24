@@ -42,6 +42,27 @@ Add your AWS account ID to your GitHub Actions secrets with the name `ACCOUNT_NU
 
 1. Run the GitHub Action called **"Install Sample App"**. This will install a sample microservices app provided by Google.
 
+### Install DevOps AI Toolkit Stack
+
+1. Add one or both of these GitHub Actions secrets:
+   - `DOT_AI_ANTHROPIC_API_KEY`
+   - `DOT_AI_OPENAI_API_KEY`
+2. Run the GitHub Action called **"Install DevOps AI Toolkit Stack"** and select the `llm_api_key_secret` dropdown option for the key you want the workflow to use.
+3. Use the default `enable_ingress=false` setting if your cluster does not already have an ingress controller.
+4. If you enable ingress, provide valid hostnames for both `dot_ai_host` and `dot_ai_ui_host`. The workflow installs the stack from `oci://ghcr.io/vfarcic/dot-ai-stack/charts/dot-ai-stack`, enables local embeddings, and verifies the resulting pods and services.
+
+### Install kagent
+
+1. Add at least one of these GitHub Actions secrets:
+   - `KAGENT_OPENAI_API_KEY`
+   - `OPENAI_API_KEY`
+2. Run the GitHub Action called **"Install kagent"**.
+3. Select the `openai_api_key_secret` dropdown option for the secret you want exposed to the install as `OPENAI_API_KEY`.
+4. Choose the `profile` dropdown option:
+   - `demo` installs the demo profile with preloaded agents and MCP tools.
+   - `minimal` installs a leaner base setup.
+5. The workflow installs kagent on the existing cluster via the `kagent install` CLI flow from the quickstart and then verifies the resulting pods and services in the selected namespace.
+
 ### Access the Sample App
 
 1. Create an env var using the command below: 
@@ -262,5 +283,3 @@ This repository uses open source code. Please see the links below:
 - [Terraform AWS EKS Module](https://github.com/terraform-aws-modules/terraform-aws-eks)
 - [AWS EKS Blueprints](https://github.com/aws-ia/terraform-aws-eks-blueprints)
 - [Google Cloud Microservices Demo](https://github.com/GoogleCloudPlatform/microservices-demo)
-
-

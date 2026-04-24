@@ -1,0 +1,199 @@
+name: Install DevOps AI Toolkit Stack
+
+on:
+  workflow_dispatch:
+    inputs:
+      cluster_name:
+        description: EKS cluster name
+        required: true
+        default: eks-cluster
+      aws_region:
+        description: AWS region
+        required: true
+        default: eu-west-1
+      namespace:
+        description: Kubernetes namespace for the stack
+        required: true
+        default: dot-ai
+      release_name:
+        description: Helm release name
+        required: true
+        default: dot-ai-stack
+      llm_api_key_secret:
+        description: GitHub Actions secret containing the LLM API key
+        required: true
+        default: DOT_AI_ANTHROPIC_API_KEY
+        type: choice
+        options:
+          - DOT_AI_ANTHROPIC_API_KEY
+          - DOT_AI_OPENAI_API_KEY
+      chart_version:
+        description: Optional chart version. Leave blank to use the latest published chart.
+        required: false
+        default: ""
+      enable_ingress:
+        description: Enable ingress resources for dot-ai and the Web UI
+        required: true
+        default: "false"
+        type: choice
+        options:
+          - "false"
+          - "true"
+      ingress_class_name:
+        description: Ingress class name when ingress is enabled
+        required: false
+        default: nginx
+      dot_ai_host:
+        description: dot-ai ingress hostname when ingress is enabled
+        required: false
+        default: dot-ai.example.com
+      dot_ai_ui_host:
+        description: dot-ai Web UI ingress hostname when ingress is enabled
+        required: false
+        default: dot-ai-ui.example.com
+      web_ui_base_url:
+        description: Optional Web UI base URL. Leave blank to derive from the UI host when ingress is enabled.
+        required: false
+        default: ""
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  helm:
+    name: Deploy DevOps AI Toolkit Stack
+    runs-on: ubuntu-latest
+    env:
+      KUBECONFIG: /home/runner/.kube/config
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: arn:aws:iam::${{ secrets.ACCOUNT_NUM }}:role/ex-iam-github-oidc
+        role-duration-seconds: 1800
+        aws-region: ${{ github.event.inputs.aws_region }}
+
+    - name: Install AWS CLI
+      uses: unfor19/install-aws-cli-action@master
+      with:
+        version: 2.21.0
+
+    - name: Setup kubectl
+      uses: azure/setup-kubectl@v4
+
+    - name: Update kubeconfig
+      run: aws eks update-kubeconfig --name "${{ github.event.inputs.cluster_name }}" --region "${{ github.event.inputs.aws_region }}" --kubeconfig "${KUBECONFIG}"
+      working-directory: /
+
+    - name: Setup Helm
+      uses: azure/setup-helm@v4
+      with:
+        version: v3.18.2
+
+    - name: Validate required secrets
+      env:
+        LLM_API_KEY_SECRET: ${{ github.event.inputs.llm_api_key_secret }}
+        ANTHROPIC_API_KEY: ${{ secrets.DOT_AI_ANTHROPIC_API_KEY }}
+        OPENAI_API_KEY: ${{ secrets.DOT_AI_OPENAI_API_KEY }}
+      run: |
+        case "${LLM_API_KEY_SECRET}" in
+          DOT_AI_ANTHROPIC_API_KEY)
+            if [ -z "${ANTHROPIC_API_KEY}" ]; then
+              echo "Missing required GitHub Actions secret: DOT_AI_ANTHROPIC_API_KEY"
+              exit 1
+            fi
+            ;;
+          DOT_AI_OPENAI_API_KEY)
+            if [ -z "${OPENAI_API_KEY}" ]; then
+              echo "Missing required GitHub Actions secret: DOT_AI_OPENAI_API_KEY"
+              exit 1
+            fi
+            ;;
+          *)
+            echo "Unsupported LLM API key secret: ${LLM_API_KEY_SECRET}"
+            exit 1
+            ;;
+        esac
+      working-directory: /
+
+    - name: Install DevOps AI Toolkit stack
+      env:
+        LLM_API_KEY_SECRET: ${{ github.event.inputs.llm_api_key_secret }}
+        CHART_VERSION: ${{ github.event.inputs.chart_version }}
+        ENABLE_INGRESS: ${{ github.event.inputs.enable_ingress }}
+        INGRESS_CLASS_NAME: ${{ github.event.inputs.ingress_class_name }}
+        DOT_AI_HOST: ${{ github.event.inputs.dot_ai_host }}
+        DOT_AI_UI_HOST: ${{ github.event.inputs.dot_ai_ui_host }}
+        WEB_UI_BASE_URL: ${{ github.event.inputs.web_ui_base_url }}
+        ANTHROPIC_API_KEY: ${{ secrets.DOT_AI_ANTHROPIC_API_KEY }}
+        OPENAI_API_KEY: ${{ secrets.DOT_AI_OPENAI_API_KEY }}
+      run: |
+        DOT_AI_AUTH_TOKEN="$(openssl rand -base64 32)"
+        DOT_AI_UI_AUTH_TOKEN="$(openssl rand -base64 32)"
+
+        chart_ref="oci://ghcr.io/vfarcic/dot-ai-stack/charts/dot-ai-stack"
+
+        helm_args=(
+          upgrade --install "${{ github.event.inputs.release_name }}" "${chart_ref}"
+          --namespace "${{ github.event.inputs.namespace }}"
+          --create-namespace
+          --set "dot-ai.localEmbeddings.enabled=true"
+          --set "dot-ai.secrets.auth.token=${DOT_AI_AUTH_TOKEN}"
+          --set "dot-ai-ui.uiAuth.token=${DOT_AI_UI_AUTH_TOKEN}"
+          --wait
+          --timeout 15m
+        )
+
+        case "${LLM_API_KEY_SECRET}" in
+          DOT_AI_ANTHROPIC_API_KEY)
+            helm_args+=(--set "dot-ai.ai.provider=anthropic")
+            helm_args+=(--set "dot-ai.secrets.anthropic.apiKey=${ANTHROPIC_API_KEY}")
+            ;;
+          DOT_AI_OPENAI_API_KEY)
+            helm_args+=(--set "dot-ai.ai.provider=openai")
+            helm_args+=(--set "dot-ai.secrets.openai.apiKey=${OPENAI_API_KEY}")
+            ;;
+          *)
+            echo "Unsupported LLM API key secret: ${LLM_API_KEY_SECRET}"
+            exit 1
+            ;;
+        esac
+
+        if [ -n "${CHART_VERSION}" ]; then
+          helm_args+=(--version "${CHART_VERSION}")
+        fi
+
+        if [ "${ENABLE_INGRESS}" = "true" ]; then
+          if [ -z "${DOT_AI_HOST}" ] || [ -z "${DOT_AI_UI_HOST}" ]; then
+            echo "dot_ai_host and dot_ai_ui_host are required when ingress is enabled"
+            exit 1
+          fi
+
+          effective_web_ui_base_url="${WEB_UI_BASE_URL}"
+          if [ -z "${effective_web_ui_base_url}" ]; then
+            effective_web_ui_base_url="http://${DOT_AI_UI_HOST}"
+          fi
+
+          helm_args+=(
+            --set "dot-ai.ingress.enabled=true"
+            --set "dot-ai.ingress.className=${INGRESS_CLASS_NAME}"
+            --set "dot-ai.ingress.host=${DOT_AI_HOST}"
+            --set "dot-ai.webUI.baseUrl=${effective_web_ui_base_url}"
+            --set "dot-ai-ui.ingress.enabled=true"
+            --set "dot-ai-ui.ingress.host=${DOT_AI_UI_HOST}"
+          )
+        fi
+
+        helm "${helm_args[@]}"
+      working-directory: /
+
+    - name: Verify deployment
+      run: |
+        kubectl get pods -n "${{ github.event.inputs.namespace }}"
+        kubectl get services -n "${{ github.event.inputs.namespace }}"
+        kubectl get ingress -n "${{ github.event.inputs.namespace }}" || true
+      working-directory: /

@@ -1,0 +1,124 @@
+name: Install kagent
+
+on:
+  workflow_dispatch:
+    inputs:
+      cluster_name:
+        description: EKS cluster name
+        required: true
+        default: eks-cluster
+      aws_region:
+        description: AWS region
+        required: true
+        default: eu-west-1
+      namespace:
+        description: Kubernetes namespace for kagent
+        required: true
+        default: kagent
+      profile:
+        description: kagent installation profile
+        required: true
+        default: demo
+        type: choice
+        options:
+          - demo
+          - minimal
+      openai_api_key_secret:
+        description: GitHub Actions secret to expose as OPENAI_API_KEY
+        required: true
+        default: KAGENT_OPENAI_API_KEY
+        type: choice
+        options:
+          - KAGENT_OPENAI_API_KEY
+          - OPENAI_API_KEY
+      install_timeout:
+        description: Install timeout passed to kagent CLI
+        required: true
+        default: 10m
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  install:
+    name: Deploy kagent
+    runs-on: ubuntu-latest
+    env:
+      KUBECONFIG: /home/runner/.kube/config
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: arn:aws:iam::${{ secrets.ACCOUNT_NUM }}:role/ex-iam-github-oidc
+        role-duration-seconds: 1800
+        aws-region: ${{ github.event.inputs.aws_region }}
+
+    - name: Install AWS CLI
+      uses: unfor19/install-aws-cli-action@master
+      with:
+        version: 2.21.0
+
+    - name: Setup kubectl
+      uses: azure/setup-kubectl@v4
+
+    - name: Setup Helm
+      uses: azure/setup-helm@v4
+      with:
+        version: v3.18.2
+
+    - name: Update kubeconfig
+      run: aws eks update-kubeconfig --name "${{ github.event.inputs.cluster_name }}" --region "${{ github.event.inputs.aws_region }}" --kubeconfig "${KUBECONFIG}"
+      working-directory: /
+
+    - name: Resolve OpenAI API key secret
+      env:
+        OPENAI_API_KEY_SECRET: ${{ github.event.inputs.openai_api_key_secret }}
+        KAGENT_OPENAI_API_KEY: ${{ secrets.KAGENT_OPENAI_API_KEY }}
+        SHARED_OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      run: |
+        case "${OPENAI_API_KEY_SECRET}" in
+          KAGENT_OPENAI_API_KEY)
+            if [ -z "${KAGENT_OPENAI_API_KEY}" ]; then
+              echo "Missing required GitHub Actions secret: KAGENT_OPENAI_API_KEY"
+              exit 1
+            fi
+            echo "OPENAI_API_KEY=${KAGENT_OPENAI_API_KEY}" >> "${GITHUB_ENV}"
+            ;;
+          OPENAI_API_KEY)
+            if [ -z "${SHARED_OPENAI_API_KEY}" ]; then
+              echo "Missing required GitHub Actions secret: OPENAI_API_KEY"
+              exit 1
+            fi
+            echo "OPENAI_API_KEY=${SHARED_OPENAI_API_KEY}" >> "${GITHUB_ENV}"
+            ;;
+          *)
+            echo "Unsupported OpenAI API key secret: ${OPENAI_API_KEY_SECRET}"
+            exit 1
+            ;;
+        esac
+      working-directory: /
+
+    - name: Install kagent CLI
+      run: curl -fsSL https://raw.githubusercontent.com/kagent-dev/kagent/refs/heads/main/scripts/get-kagent | bash
+      working-directory: /
+
+    - name: Install kagent
+      env:
+        PROFILE: ${{ github.event.inputs.profile }}
+        NAMESPACE: ${{ github.event.inputs.namespace }}
+        INSTALL_TIMEOUT: ${{ github.event.inputs.install_timeout }}
+      run: |
+        kagent install --profile "${PROFILE}" --namespace "${NAMESPACE}" --timeout "${INSTALL_TIMEOUT}"
+      working-directory: /
+
+    - name: Verify deployment
+      env:
+        NAMESPACE: ${{ github.event.inputs.namespace }}
+      run: |
+        kubectl get pods -n "${NAMESPACE}"
+        kubectl get services -n "${NAMESPACE}"
+      working-directory: /
