@@ -1,7 +1,7 @@
 terraform {
   required_version = ">= 1.0"
 
-    backend "s3" {
+  backend "s3" {
     bucket = "tf-state-eks-2023"
     key    = "apps"
     region = "eu-west-2"

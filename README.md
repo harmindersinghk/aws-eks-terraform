@@ -35,8 +35,14 @@ Add your AWS account ID to your GitHub Actions secrets with the name `ACCOUNT_NU
 
 ### Install Kubernetes Add-ons
 
-1. Edit `./eks-apps/delete_helm_addons.tfvars` to set variables for the required add-ons to `true`. Note that there are many more add-ons available to be installed. Look at the code to see which ones can be enabled and add variables as needed.
-2. Run the GitHub Action called **"Install Helm Addons"**. This will install the configured add-ons to the cluster.
+1. Choose the deployment mode you want to use for add-ons:
+   - Helm-managed: edit `./eks-apps/helm_addons.tfvars`
+   - ArgoCD-managed: edit `./eks-apps/enable_argocd_addons.tfvars`
+2. Set the required add-on variables to `true`. Note that there are many more add-ons available than the examples shown in these tfvars files. Look at `./eks-apps/main.tf` and `./eks-components/modules/kubernetes-addons/` to see which ones can be enabled and add variables as needed.
+3. Run one of these GitHub Actions:
+   - **"Install Helm Addons"** to deploy add-ons directly with Terraform/Helm
+   - **"Install ArgoCD Addons"** to deploy ArgoCD and let it manage the configured add-ons
+4. Use only one add-on deployment path for a given set of add-ons at a time. Running the Helm workflow deploys from `helm_addons.tfvars`; running the ArgoCD workflow deploys from `enable_argocd_addons.tfvars`.
 
 ### Install Sample App
 
