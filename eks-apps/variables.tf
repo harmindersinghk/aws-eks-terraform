@@ -22,6 +22,12 @@ variable "enable_calico" {
   default     = false
 }
 
+variable "calico_helm_config" {
+  description = "Helm config overrides for Calico"
+  type        = any
+  default     = {}
+}
+
 variable "enable_cert_manager" {
   description = "Enable Cert Manager add-on"
   type        = bool
