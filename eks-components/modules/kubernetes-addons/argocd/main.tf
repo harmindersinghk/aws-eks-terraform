@@ -52,12 +52,14 @@ resource "helm_release" "argocd_application" {
     },
     {
       name = "source.helm.values"
-      value = yamlencode(merge(
-        { repoUrl = each.value.repo_url },
-        each.value.values,
-        local.global_application_values,
-        each.value.add_on_application ? var.addon_config : {}
-      ))
+      value = yamlencode(merge(concat(
+        [
+          { repoUrl = each.value.repo_url },
+          each.value.values,
+          local.global_application_values
+        ],
+        each.value.add_on_application ? [var.addon_config] : []
+      )...))
     },
     {
       name  = "destination.server"

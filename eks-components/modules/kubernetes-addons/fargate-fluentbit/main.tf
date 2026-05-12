@@ -1,7 +1,7 @@
 # Help on Fargate Logging with Fluentbit and CloudWatch
 # https://docs.aws.amazon.com/eks/latest/userguide/fargate-logging.html
 
-resource "kubernetes_namespace" "aws_observability" {
+resource "kubernetes_namespace_v1" "aws_observability" {
   metadata {
     name = "aws-observability"
 
@@ -15,7 +15,7 @@ resource "kubernetes_namespace" "aws_observability" {
 resource "kubernetes_config_map" "aws_logging" {
   metadata {
     name      = "aws-logging"
-    namespace = kubernetes_namespace.aws_observability.id
+    namespace = kubernetes_namespace_v1.aws_observability.metadata[0].name
   }
 
   data = {

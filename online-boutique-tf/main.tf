@@ -4,7 +4,7 @@ locals {
 }
 
 
-resource "kubernetes_namespace" "online_boutique_ns" {
+resource "kubernetes_namespace_v1" "online_boutique_ns" {
   metadata {
     name = var.namespace
   }

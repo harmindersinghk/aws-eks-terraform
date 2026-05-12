@@ -46,7 +46,7 @@ module "helm_addon" {
       chart            = "ondat"
       repository       = "https://ondat.github.io/charts"
       version          = "0.2.5"
-      namespace        = kubernetes_namespace.ondat.metadata[0].name
+      namespace        = kubernetes_namespace_v1.ondat.metadata[0].name
       timeout          = "1500"
       create_namespace = false
       values           = local.default_helm_values
@@ -99,7 +99,7 @@ module "helm_addon" {
 
   irsa_config = {
     create_kubernetes_namespace = false
-    kubernetes_namespace        = kubernetes_namespace.ondat.metadata[0].name
+    kubernetes_namespace        = kubernetes_namespace_v1.ondat.metadata[0].name
 
     create_kubernetes_service_account = true
     kubernetes_service_account        = local.service_account_name
@@ -114,7 +114,7 @@ module "helm_addon" {
   addon_context = var.addon_context
 }
 
-resource "kubernetes_namespace" "ondat" {
+resource "kubernetes_namespace_v1" "ondat" {
   metadata {
     name = "ondat"
     labels = {
@@ -127,7 +127,7 @@ resource "kubernetes_namespace" "ondat" {
 # Secrets
 ################################################################################
 
-resource "kubernetes_namespace" "storageos" {
+resource "kubernetes_namespace_v1" "storageos" {
   count = length(var.etcd_endpoints) == 0 ? 0 : 1
 
   metadata {
@@ -143,7 +143,7 @@ resource "kubernetes_secret_v1" "etcd" {
 
   metadata {
     name      = "storageos-etcd"
-    namespace = kubernetes_namespace.storageos[0].metadata[0].name
+    namespace = kubernetes_namespace_v1.storageos[0].metadata[0].name
     labels = {
       app = local.name
     }
