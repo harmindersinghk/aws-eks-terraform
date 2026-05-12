@@ -12,7 +12,7 @@ resource "kubernetes_namespace_v1" "aws_observability" {
 }
 
 # fluent-bit-cloudwatch value as the name of the CloudWatch log group that is automatically created as soon as your apps start logging
-resource "kubernetes_config_map" "aws_logging" {
+resource "kubernetes_config_map_v1" "aws_logging" {
   metadata {
     name      = "aws-logging"
     namespace = kubernetes_namespace_v1.aws_observability.metadata[0].name
