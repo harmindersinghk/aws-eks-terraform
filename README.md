@@ -266,6 +266,16 @@ For detailed configuration, custom scenarios, and advanced usage, see the compre
    ```
 4. Once this is done, the GitHub Actions workflow will complete.
 
+### Delete ArgoCD-managed Kubernetes Add-ons
+
+1. Edit `./eks-apps/delete_argocd_addons.tfvars` to set the ArgoCD-managed add-ons you want removed to `false`. Keep `enable_argocd = true` and `argocd_manage_add_ons = true` so ArgoCD remains installed while it prunes the selected add-ons.
+2. Run the GitHub Action called **"Delete ArgoCD Addons"**. This will remove the configured ArgoCD-managed add-ons from the cluster.
+3. Sometimes the namespace for a particular add-on can be stuck in "terminating" state. If this happens, run the following command:
+   ```bash
+   sh scripts/finalizer.sh <namespace that is stuck>
+   ```
+4. Once this is done, the GitHub Actions workflow will complete.
+
 ### Delete the EKS Cluster
 
 1. Run the GitHub Action called **"Delete Cluster"**. This will delete the EKS Cluster, Managed NodeGroups, VPC, KMS Key, and any other resources that were created.
