@@ -13,6 +13,7 @@ locals {
     awsLoadBalancerController = var.enable_aws_load_balancer_controller ? try(module.aws_load_balancer_controller[0].argocd_gitops_config, null) : null
     awsNodeTerminationHandler = var.enable_aws_node_termination_handler ? try(module.aws_node_termination_handler[0].argocd_gitops_config, null) : null
     certManager               = var.enable_cert_manager ? try(module.cert_manager[0].argocd_gitops_config, null) : null
+    cert-manager              = var.enable_cert_manager ? try(module.cert_manager[0].argocd_gitops_config, null) : null
     clusterAutoscaler         = var.enable_cluster_autoscaler ? try(module.cluster_autoscaler[0].argocd_gitops_config, null) : null
     corednsAutoscaler         = var.enable_amazon_eks_coredns && var.enable_coredns_autoscaler && length(var.coredns_autoscaler_helm_config) > 0 ? try(module.coredns_autoscaler[0].argocd_gitops_config, null) : null
     datadogOperator           = var.enable_datadog_operator ? try(module.datadog_operator[0].argocd_gitops_config, null) : null
@@ -20,6 +21,7 @@ locals {
     ingressNginx              = var.enable_ingress_nginx ? try(try(module.ingress_nginx[0].argocd_gitops_config, null), null) : null
     keda                      = var.enable_keda ? try(try(module.keda[0].argocd_gitops_config, null), null) : null
     metricsServer             = var.enable_metrics_server ? try(try(module.metrics_server[0].argocd_gitops_config, null), null) : null
+    metrics-server            = var.enable_metrics_server ? try(try(module.metrics_server[0].argocd_gitops_config, null), null) : null
     ondat                     = var.enable_ondat ? try(try(module.ondat[0].argocd_gitops_config, null), null) : null
     prometheus                = var.enable_prometheus ? try(try(module.prometheus[0].argocd_gitops_config, null), null) : null
     sparkHistoryServer        = var.enable_spark_history_server ? try(try(module.spark_history_server[0].argocd_gitops_config, null), null) : null
