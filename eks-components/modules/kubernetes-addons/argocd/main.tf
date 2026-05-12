@@ -22,49 +22,48 @@ resource "helm_release" "argocd_application" {
 
   name      = each.key
   chart     = "${path.module}/argocd-application/helm"
-  version   = "1.0.0"
   namespace = local.helm_config["namespace"]
 
   # Application Meta.
- set = [
-  {
-    name  = "name"
-    value = each.key
-  },
-  {
-    name  = "project"
-    value = each.value.project
-  },
-  {
-    name  = "source.repoUrl"
-    value = each.value.repo_url
-  },
-  {
-    name  = "source.targetRevision"
-    value = each.value.target_revision
-  },
-  {
-    name  = "source.path"
-    value = each.value.path
-  },
-  {
-    name  = "source.helm.releaseName"
-    value = each.key
-  },
-  {
-    name  = "source.helm.values"
-    value = yamlencode(merge(
-      { repoUrl = each.value.repo_url },
-      each.value.values,
-      local.global_application_values,
-      each.value.add_on_application ? var.addon_config : {}
-    ))
-  },
-  {
-    name  = "destination.server"
-    value = each.value.destination
-  }
-]
+  set = [
+    {
+      name  = "name"
+      value = each.key
+    },
+    {
+      name  = "project"
+      value = each.value.project
+    },
+    {
+      name  = "source.repoUrl"
+      value = each.value.repo_url
+    },
+    {
+      name  = "source.targetRevision"
+      value = each.value.target_revision
+    },
+    {
+      name  = "source.path"
+      value = each.value.path
+    },
+    {
+      name  = "source.helm.releaseName"
+      value = each.key
+    },
+    {
+      name = "source.helm.values"
+      value = yamlencode(merge(
+        { repoUrl = each.value.repo_url },
+        each.value.values,
+        local.global_application_values,
+        each.value.add_on_application ? var.addon_config : {}
+      ))
+    },
+    {
+      name  = "destination.server"
+      value = each.value.destination
+    }
+  ]
 
   values = [
     # Application ignoreDifferences
@@ -102,7 +101,7 @@ resource "kubectl_manifest" "argocd_kustomize_application" {
 # Private Repo Access
 # ---------------------------------------------------------------------------------------------------------------------
 
-resource "kubernetes_secret" "argocd_gitops" {
+resource "kubernetes_secret_v1" "argocd_gitops" {
   for_each = { for k, v in var.applications : k => v if try(v.ssh_key_secret_name, null) != null }
 
   metadata {

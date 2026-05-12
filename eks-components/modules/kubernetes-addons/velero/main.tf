@@ -23,7 +23,7 @@ module "helm_addon" {
     namespace   = local.namespace
     values = [templatefile("${path.module}/values.yaml", {
       bucket = var.backup_s3_bucket,
-      region = data.aws_region.current.name
+      region = data.aws_region.current.region
     })]
     },
     var.helm_config

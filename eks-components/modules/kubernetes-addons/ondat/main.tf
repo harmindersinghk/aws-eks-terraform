@@ -12,8 +12,8 @@ locals {
     clusterAdminUsername               = "storageos"
     clusterAdminPassword               = "storageos"
     clusterKvBackendAddress            = local.ondat_etcd_endpoints
-    clusterKvBackendTLSSecretName      = length(kubernetes_secret.etcd) > 0 ? kubernetes_secret.etcd[0].metadata[0].name : "storageos-etcd-secret"
-    clusterKvBackendTLSSecretNamespace = length(kubernetes_secret.etcd) > 0 ? kubernetes_secret.etcd[0].metadata[0].namespace : "storageos"
+    clusterKvBackendTLSSecretName      = length(kubernetes_secret_v1.etcd) > 0 ? kubernetes_secret_v1.etcd[0].metadata[0].name : "storageos-etcd-secret"
+    clusterKvBackendTLSSecretNamespace = length(kubernetes_secret_v1.etcd) > 0 ? kubernetes_secret_v1.etcd[0].metadata[0].namespace : "storageos"
     clusterNodeSelectorTermKey         = "storageos-node"
     clusterNodeSelectorTermValue       = "1"
     etcdNodeSelectorTermKey            = "storageos-etcd"
@@ -74,11 +74,11 @@ module "helm_addon" {
     },
     {
       name  = "ondat-operator.cluster.kvBackend.tlsSecretName"
-      value = length(kubernetes_secret.etcd) > 0 ? kubernetes_secret.etcd[0].metadata[0].name : "storageos-etcd-secret"
+      value = length(kubernetes_secret_v1.etcd) > 0 ? kubernetes_secret_v1.etcd[0].metadata[0].name : "storageos-etcd-secret"
     },
     {
       name  = "ondat-operator.cluster.kvBackend.tlsSecretNamespace"
-      value = length(kubernetes_secret.etcd) > 0 ? kubernetes_secret.etcd[0].metadata[0].namespace : "storageos"
+      value = length(kubernetes_secret_v1.etcd) > 0 ? kubernetes_secret_v1.etcd[0].metadata[0].namespace : "storageos"
     },
     {
       name  = "etcd-cluster-operator.cluster.create"
@@ -138,7 +138,7 @@ resource "kubernetes_namespace" "storageos" {
   }
 }
 
-resource "kubernetes_secret" "etcd" {
+resource "kubernetes_secret_v1" "etcd" {
   count = length(var.etcd_endpoints) == 0 ? 0 : 1
 
   metadata {

@@ -41,7 +41,7 @@ module "aws_coredns" {
     var.self_managed_coredns_helm_config,
     {
       # Putting after because we don't want users to overwrite this - internal use only
-      image_registry = local.amazon_container_image_registry_uris[data.aws_region.current.name]
+      image_registry = local.amazon_container_image_registry_uris[data.aws_region.current.region]
     }
   )
 
@@ -182,7 +182,7 @@ module "aws_load_balancer_controller" {
   source            = "./aws-load-balancer-controller"
   helm_config       = var.aws_load_balancer_controller_helm_config
   manage_via_gitops = var.argocd_manage_add_ons
-  addon_context     = merge(local.addon_context, { default_repository = local.amazon_container_image_registry_uris[data.aws_region.current.name] })
+  addon_context     = merge(local.addon_context, { default_repository = local.amazon_container_image_registry_uris[data.aws_region.current.region] })
 }
 
 module "aws_node_termination_handler" {
@@ -675,7 +675,7 @@ module "calico" {
 
   count = var.enable_calico ? 1 : 0
 
-  helm_config       = var.calico_helm_config
+  helm_config = var.calico_helm_config
   # manage_via_gitops = var.argocd_manage_add_ons
   manage_via_gitops = false
   addon_context     = local.addon_context
