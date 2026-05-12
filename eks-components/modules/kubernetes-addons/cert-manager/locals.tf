@@ -45,7 +45,10 @@ locals {
   }
 
   argocd_gitops_config = {
-    enable             = true
-    serviceAccountName = local.service_account
+    enable                    = true
+    serviceAccountName        = local.service_account
+    domainNames               = var.domain_names
+    letsencryptEmail          = var.letsencrypt_email
+    installLetsencryptIssuers = var.install_letsencrypt_issuers && var.letsencrypt_email != "" && length(var.domain_names) > 0
   }
 }
