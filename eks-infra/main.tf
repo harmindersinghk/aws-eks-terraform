@@ -122,50 +122,32 @@ module "eks" {
 
   # EKS Managed Node Group(s)
   eks_managed_node_group_defaults = {
-    ami_type       = "AL2_x86_64"
-    instance_types = ["t3.medium"]
-    key_name       = "EKS"
-
-    attach_cluster_primary_security_group = false
-    vpc_security_group_ids                = [aws_security_group.additional.id]
-    iam_role_additional_policies = {
-      additional = aws_iam_policy.additional.arn
-    }
+    ami_type                   = "AL2_x86_64"
+    instance_types             = ["t3.medium"]
+    create_launch_template     = false
+    use_custom_launch_template = false
   }
 
   eks_managed_node_groups = {
-    blue = {}
-    green = {
-      min_size     = 1
+    baseline = {
+      min_size     = 2
       max_size     = 4
       desired_size = 2
 
-      instance_types = ["t3.medium"]
+      labels = {
+        workload = "baseline"
+      }
+    }
+
+    spot = {
+      min_size     = 0
+      max_size     = 4
+      desired_size = 2
+
+      instance_types = ["t3.medium", "t3a.medium"]
       capacity_type  = "SPOT"
       labels = {
-        Environment = "test"
-        GithubRepo  = "terraform-aws-eks"
-        GithubOrg   = "terraform-aws-modules"
-      }
-
-      # taints = {
-      #   dedicated = {
-      #     key    = "dedicated"
-      #     value  = "gpuGroup"
-      #     effect = "NO_SCHEDULE"
-      #   }
-      # }
-
-      update_config = {
-        max_unavailable_percentage = 25 # or set `max_unavailable`
-      }
-
-      tags = {
-        ExtraTag = "example"
-      }
-
-      node_security_group_tags = {
-        "kubernetes.io/cluster/${local.name}" = null
+        workload = "spot"
       }
     }
   }
@@ -346,4 +328,3 @@ module "kms" {
 
   tags = local.tags
 }
-
