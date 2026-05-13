@@ -128,29 +128,7 @@ module "eks" {
     use_custom_launch_template = false
   }
 
-  eks_managed_node_groups = {
-    baseline = {
-      min_size     = 2
-      max_size     = 4
-      desired_size = 2
-
-      labels = {
-        workload = "baseline"
-      }
-    }
-
-    spot = {
-      min_size     = 0
-      max_size     = 4
-      desired_size = 2
-
-      instance_types = ["t3.medium", "t3a.medium"]
-      capacity_type  = "SPOT"
-      labels = {
-        workload = "spot"
-      }
-    }
-  }
+  eks_managed_node_groups = {}
 
   # Create a new cluster where both an identity provider and Fargate profile is created
   # will result in conflicts since only one can take place at a time
@@ -215,6 +193,12 @@ module "eks_managed_node_group" {
   cluster_version = module.eks.cluster_version
   key_name        = "EKS"
 
+  min_size     = 2
+  max_size     = 4
+  desired_size = 2
+
+  instance_types = ["t3.medium"]
+
   subnet_ids                        = module.vpc.private_subnets
   cluster_primary_security_group_id = module.eks.cluster_primary_security_group_id
   vpc_security_group_ids = [
@@ -231,8 +215,7 @@ module "eks_managed_node_group" {
     lockdown = "integrity"
 
     [settings.kubernetes.node-labels]
-    "label1" = "foo"
-    "label2" = "bar"
+    "workload" = "baseline"
   EOT
 
   tags = merge(local.tags, { Separate = "eks-managed-node-group" })
