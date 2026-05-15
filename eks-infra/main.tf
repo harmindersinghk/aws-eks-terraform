@@ -218,11 +218,7 @@ module "eks_managed_node_group" {
     "workload" = "baseline"
   EOT
 
-  tags = merge(local.tags, {
-    Separate                                  = "eks-managed-node-group"
-    "k8s.io/cluster-autoscaler/enabled"       = "true"
-    "k8s.io/cluster-autoscaler/${local.name}" = "owned"
-  })
+  tags = merge(local.tags, { Separate = "eks-managed-node-group" })
 }
 
 ################################################################################
