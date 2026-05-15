@@ -39,3 +39,9 @@ variable "enable_metrics_server" {
   type        = bool
   default     = false
 }
+
+variable "enable_cluster_autoscaler" {
+  description = "Enable Cluster Autoscaler add-on"
+  type        = bool
+  default     = false
+}

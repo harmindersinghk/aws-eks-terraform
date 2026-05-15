@@ -86,7 +86,7 @@ module "eks_blueprints_kubernetes_addons" {
   enable_calico                         = var.enable_calico
   calico_helm_config                    = var.calico_helm_config
   enable_cert_manager                   = var.enable_cert_manager
-  enable_cluster_autoscaler             = false
+  enable_cluster_autoscaler             = var.enable_cluster_autoscaler
   enable_grafana                        = false
   enable_karpenter                      = false
   enable_keda                           = false
